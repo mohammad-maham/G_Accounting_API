@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Accounting.Models;
+﻿namespace Accounting.Models;
 
 public partial class UserSession
 {

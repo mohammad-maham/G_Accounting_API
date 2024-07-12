@@ -40,7 +40,9 @@ public partial class GAccountingDbContext : DbContext
     public virtual DbSet<UserSession> UserSessions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql("Host=194.60.231.81:5432;Database=G_Accounting_DB;Username=postgres;Password=Maham@7796");
+    {
+        optionsBuilder.UseNpgsql("Host=194.60.231.81:5432;Database=G_Accounting_DB;Username=postgres;Password=Maham@7796");
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -7,9 +7,10 @@ namespace Accounting.BusinessLogics
 {
     public class Users : IUsers
     {
+        private readonly ILogger<Users> _logger;
         private readonly GAccountingDbContext _accounting;
         private readonly AuthenticationService _authService;
-        private readonly ILogger<Users> _logger;
+
         public Users(GAccountingDbContext accounting, ILogger<Users> logger, AuthenticationService authService)
         {
             _accounting = accounting;
@@ -31,8 +32,8 @@ namespace Accounting.BusinessLogics
         {
             if (user != null && !await IsExistUser(user.Id))
             {
-                _ = await _accounting.Users.AddAsync(user);
-                _ = await _accounting.SaveChangesAsync();
+                await _accounting.Users.AddAsync(user);
+                await _accounting.SaveChangesAsync();
             }
             else { user = null; }
             return user;

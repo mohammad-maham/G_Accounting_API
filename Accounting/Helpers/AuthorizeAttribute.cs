@@ -1,5 +1,4 @@
-﻿using Accounting.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -13,9 +12,8 @@ namespace Accounting.Helpers
     {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            _ = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings").Get<JWTOptions>()!;
             StringValues user = context.HttpContext.Request.Headers[HeaderNames.Authorization];
-            _ = AuthenticationHeaderValue.TryParse(user, out AuthenticationHeaderValue? headerValue);
+            AuthenticationHeaderValue.TryParse(user, out AuthenticationHeaderValue? headerValue);
             if (headerValue == null || (headerValue != null && (headerValue.Parameter == null || IsTokenExpired(headerValue.Parameter))))
             {
                 context.Result = new JsonResult(new { message = "Unauthorized" })

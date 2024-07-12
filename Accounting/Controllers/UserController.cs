@@ -1,6 +1,5 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Errors;
-using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,8 +9,8 @@ namespace Accounting.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUsers _login;
         private readonly ILogger<UserController> _logger;
+        private readonly IUsers _login;
         private readonly IAuthentication _auth;
 
         public UserController(ILogger<UserController> logger, IUsers login, IAuthentication auth)
@@ -25,7 +24,7 @@ namespace Accounting.Controllers
         [Route("[action]")]
         public async Task<IActionResult> SignIn(long NationalCode, long Mobile)
         {
-            OTPEmail otpEmail = new OTPEmail();
+            OTPEmail otpEmail = new();
             string token = await _login.GetSignin(NationalCode, Mobile);
             if (!string.IsNullOrEmpty(token))
             {
@@ -44,8 +43,12 @@ namespace Accounting.Controllers
             if (user.NationalCode != 0 && user.Mobile != 0)
             {
                 registeredUser = await _login.GetSignup(user);
+                return Ok(new ApiResponse(200, registeredUser));
             }
-            return registeredUser == null ? BadRequest(new ApiResponse(502, "The current user is already registered!")) : Ok(new ApiResponse(200, registeredUser));
+            else
+            {
+                return BadRequest(new ApiResponse(502, "The current user is already registered!"))
+            }
         }
     }
 }

@@ -90,9 +90,9 @@ namespace Accounting.Services
 
             // Create Html Body
             StringBuilder mailBody = new();
-            _ = mailBody.AppendFormat("<h1>Verification code: </h1>");
-            _ = mailBody.AppendFormat("<br />");
-            _ = mailBody.AppendFormat("<p>{0}</p>", email.OTP);
+            mailBody.AppendFormat("<h1>Verification code: </h1>");
+            mailBody.AppendFormat("<br />");
+            mailBody.AppendFormat("<p>{0}</p>", email.OTP);
 
             string body = mailBody.ToString();
 
