@@ -47,7 +47,7 @@ namespace Accounting.Controllers
             }
             else
             {
-                return BadRequest(new ApiResponse(502, "The current user is already registered!"))
+                return BadRequest(new ApiResponse(502, "The current user is already registered!"));
             }
         }
     }
