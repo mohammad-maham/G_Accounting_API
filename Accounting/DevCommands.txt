@@ -1,0 +1,4 @@
+﻿For scaffolding entites from database:
+--------------------------------------------
+Scaffold-DbContext “Host=194.60.231.81:5432;Database=G_Accounting_DB;Username=postgres;Password=Maham@7796” Npgsql.EntityFrameworkCore.PostgreSQL -OutputDir Models -f
+--------------------------------------------
