@@ -1,6 +1,5 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
-using Accounting.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Accounting.BusinessLogics
@@ -9,13 +8,13 @@ namespace Accounting.BusinessLogics
     {
         private readonly ILogger<Users> _logger;
         private readonly GAccountingDbContext _accounting;
-        private readonly AuthenticationService _authService;
+        private readonly IAuthentication _auth;
 
-        public Users(GAccountingDbContext accounting, ILogger<Users> logger, AuthenticationService authService)
+        public Users(GAccountingDbContext accounting, ILogger<Users> logger, IAuthentication auth)
         {
             _accounting = accounting;
             _logger = logger;
-            _authService = authService;
+            _auth = auth;
         }
 
         public async Task<string> GetSignin(long NationalCode, long Mobile)
@@ -24,7 +23,7 @@ namespace Accounting.BusinessLogics
                 _accounting
                 .Users
                 .FirstOrDefaultAsync(x => x.NationalCode == NationalCode && x.Mobile == Mobile);
-            return user != null ? _authService.CreateToken(user) : "";
+            return user != null ? _auth.CreateToken(user) : "";
 
         }
 

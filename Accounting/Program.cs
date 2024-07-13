@@ -81,8 +81,10 @@ public class Program
        });
 
         builder.Services.AddProblemDetails();
-        builder.Services.AddTransient<AuthenticationService>();
+
         builder.Services.AddScoped<IUsers, Users>();
+        builder.Services.AddScoped<ISMTP, SMTP>();
+        builder.Services.AddTransient<IAuthentication, AuthenticationService>();
 
         WebApplication app = builder.Build();
 

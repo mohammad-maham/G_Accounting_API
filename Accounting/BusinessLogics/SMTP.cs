@@ -35,6 +35,7 @@ namespace Accounting.BusinessLogics
 
             // Send email
             await client.SendMailAsync(mailMessage);
+            client.Dispose();
         }
     }
 }

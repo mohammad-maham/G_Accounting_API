@@ -25,10 +25,18 @@ namespace Accounting.Controllers
         public async Task<IActionResult> SignIn(long NationalCode, long Mobile)
         {
             OTPEmail otpEmail = new();
-            string token = await _login.GetSignin(NationalCode, Mobile);
-            if (!string.IsNullOrEmpty(token))
+            string token = string.Empty;
+            if (NationalCode != 0 && Mobile != 0)
             {
-                await _auth.SendOTPEmailAsync(otpEmail);
+                token = await _login.GetSignin(NationalCode, Mobile);
+                if (!string.IsNullOrEmpty(token))
+                {
+                    await _auth.SendOTPEmailAsync(otpEmail);
+                }
+            }
+            else
+            {
+                return BadRequest(new ApiResponse(502, "Please set parameters!"));
             }
 
             return Ok(token);
