@@ -21,7 +21,7 @@ namespace Accounting.Services
         public string CreateToken(User user)
         {
             JWTOptions jwtOptions = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings").Get<JWTOptions>()!;
-            DateTime expiration = DateTime.UtcNow.AddMinutes(jwtOptions.ExpirationMinute);
+            DateTime expiration = DateTime.UtcNow.AddHours(jwtOptions.ExpirationHours);
             JwtSecurityToken token = CreateJwtToken(
                 CreateClaims(user, jwtOptions),
                 CreateSigningCredentials(jwtOptions),

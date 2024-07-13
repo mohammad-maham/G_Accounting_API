@@ -5,6 +5,6 @@
         string Audience,
         string SymmetricSecurityKey,
         string JwtRegisteredClaimNamesSub,
-        int ExpirationMinute
+        int ExpirationHours
     );
 }
