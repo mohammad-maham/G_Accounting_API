@@ -21,8 +21,9 @@ namespace Accounting.Services
             _accounting = accounting;
         }
 
-        public string CreateToken(User user)
+        public async Task<string> CreateTokenAsync(User user)
         {
+            string tkn = string.Empty;
             JWTOptions jwtOptions = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings").Get<JWTOptions>()!;
             DateTime expiration = DateTime.UtcNow.AddHours(jwtOptions.ExpirationHours);
             JwtSecurityToken token = CreateJwtToken(
@@ -35,7 +36,16 @@ namespace Accounting.Services
 
             _logger.LogInformation("JWT Token created for UserId: " + user.Id);
 
-            return tokenHandler.WriteToken(token);
+            tkn = tokenHandler.WriteToken(token);
+            if (!string.IsNullOrEmpty(tkn))
+            {
+                if (!await _accounting.SessionMgrs.AnyAsync(x => x.Token == tkn))
+                {
+                    await _accounting.SessionMgrs.AddAsync(new SessionMgr() { Token = tkn, Status = 0, UseDate = DateTimeOffset.Now });
+                    await _accounting.SaveChangesAsync();
+                }
+            }
+            return tkn;
         }
 
         private JwtSecurityToken CreateJwtToken(List<Claim> claims, SigningCredentials credentials,
@@ -121,7 +131,7 @@ namespace Accounting.Services
                     if (diff.TotalMinutes > 5) { return false; }
                     else
                     {
-                        await _accounting.SessionMgrs.AddAsync(new SessionMgr() { Token = token, Status = 0 });
+                        await _accounting.SessionMgrs.AddAsync(new SessionMgr() { Token = token, Status = 0, UseDate = DateTimeOffset.Now });
                     }
                     return true;
                 }

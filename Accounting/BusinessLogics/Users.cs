@@ -23,7 +23,7 @@ namespace Accounting.BusinessLogics
                 _accounting
                 .Users
                 .FirstOrDefaultAsync(x => x.NationalCode == NationalCode && x.Mobile == Mobile);
-            return user != null ? _auth.CreateToken(user) : "";
+            return user != null ? await _auth.CreateTokenAsync(user) : "";
 
         }
 
