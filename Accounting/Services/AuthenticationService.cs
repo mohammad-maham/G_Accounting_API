@@ -41,7 +41,12 @@ namespace Accounting.Services
             {
                 if (!await _accounting.SessionMgrs.AnyAsync(x => x.Token == tkn))
                 {
-                    await _accounting.SessionMgrs.AddAsync(new SessionMgr() { Token = tkn, Status = 0, UseDate = DateTimeOffset.Now });
+                    await _accounting.SessionMgrs.AddAsync(new SessionMgr()
+                    {
+                        Token = tkn,
+                        Status = 0,
+                        UseDate = DateTimeOffset.Now
+                    });
                     await _accounting.SaveChangesAsync();
                 }
             }
@@ -124,14 +129,23 @@ namespace Accounting.Services
             long count = await _accounting.SessionMgrs.Where(x => x.Token == token).CountAsync();
             if (count > 0)
             {
-                DateTimeOffset? lastTokenUseDate = await _accounting.SessionMgrs.Where(x => x.Token == token).Select(x => x.UseDate).MaxAsync();
+                List<SessionMgr> sessions = await _accounting.SessionMgrs.Where(x => x.Token == token).OrderBy(x => x.UseDate).ToListAsync();
+                SessionMgr session = sessions.Last();
+                DateTimeOffset? lastTokenUseDate = session.UseDate;
                 if (lastTokenUseDate != null)
                 {
                     TimeSpan diff = lastTokenUseDate?.Subtract(DateTimeOffset.Now) ?? new TimeSpan();
                     if (diff.TotalMinutes > 5) { return false; }
                     else
                     {
-                        await _accounting.SessionMgrs.AddAsync(new SessionMgr() { Token = token, Status = 0, UseDate = DateTimeOffset.Now });
+                        await _accounting.SessionMgrs.AddAsync(new SessionMgr()
+                        {
+                            Id = session.Id,
+                            Token = token,
+                            Status = 0,
+                            UseDate = DateTimeOffset.Now
+                        });
+                        await _accounting.SaveChangesAsync();
                     }
                     return true;
                 }
