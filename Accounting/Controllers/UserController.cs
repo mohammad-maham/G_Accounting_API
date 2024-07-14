@@ -29,10 +29,10 @@ namespace Accounting.Controllers
             if (NationalCode != 0 && Mobile != 0)
             {
                 token = await _login.GetSigninAsync(NationalCode, Mobile);
-                if (!string.IsNullOrEmpty(token))
+                /*if (!string.IsNullOrEmpty(token))
                 {
-                    await _auth.SendOTPEmailAsync(otpEmail);
-                }
+                    await _auth.SendOTPEmailAsync(new OTPEmail() { OTP = 123456, To = "mehrdadnjfs@gmail.com", Subject = "Mehrdad" });
+                }*/
             }
             else
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NodaTime;
 
 namespace Accounting.Models;
 
@@ -11,7 +12,7 @@ public partial class UserRole
 
     public short Status { get; set; }
 
-    public DateTime RegDate { get; set; }
+    public Instant RegDate { get; set; }
 
     public long RegUserId { get; set; }
 

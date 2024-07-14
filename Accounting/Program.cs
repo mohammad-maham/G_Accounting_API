@@ -55,7 +55,9 @@ public class Program
            });
         });
 
-        builder.Services.AddDbContext<GAccountingDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("GAccountingDbContext")));
+        builder.Services.AddDbContext<GAccountingDbContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("GAccountingDbContext"),
+options => options.UseNodaTime()));
 
         builder.Services.AddAuthentication(x =>
         {

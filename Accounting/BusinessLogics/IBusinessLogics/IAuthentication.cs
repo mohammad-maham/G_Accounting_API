@@ -1,4 +1,5 @@
 ﻿using Accounting.Models;
+using NodaTime;
 
 namespace Accounting.BusinessLogics.IBusinessLogics
 {
@@ -7,7 +8,7 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         Task<string> CreateTokenAsync(User user);
         Task SendOTPEmailAsync(OTPEmail email);
         Task<bool> VerifyTokenAsync(string token);
-        bool IsTokenExpired(DateTimeOffset? useDate);
+        bool IsTokenExpired(/*ZonedDateTime*/DateTime? useDate);
         string GenerateOTP(int digits);
     }
 }

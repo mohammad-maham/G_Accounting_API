@@ -1,4 +1,5 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
+using Accounting.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
@@ -26,7 +27,7 @@ namespace Accounting.Helpers
 
             if (headerValue == null || headerValue.Parameter == null)
             {
-                context.Result = new JsonResult(new { message = "UnAuthorized!" })
+                context.Result = new JsonResult(new { message = "Unauthorized!" })
                 { StatusCode = StatusCodes.Status401Unauthorized };
             }
             else
@@ -34,7 +35,7 @@ namespace Accounting.Helpers
                 bool isValidToken = _auth.VerifyTokenAsync(headerValue.Parameter).Result;
                 if (!isValidToken)
                 {
-                    context.Result = new JsonResult(new { message = "UnAuthorized!" })
+                    context.Result = new JsonResult(new { message = "Unauthorized!" })
                     { StatusCode = StatusCodes.Status401Unauthorized };
                 }
             }

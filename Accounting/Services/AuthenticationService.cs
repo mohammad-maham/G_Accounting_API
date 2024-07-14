@@ -1,7 +1,10 @@
-﻿using Accounting.BusinessLogics.IBusinessLogics;
+﻿using Accounting.BusinessLogics;
+using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using NodaTime;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -10,10 +13,15 @@ namespace Accounting.Services
 {
     public class AuthenticationService : IAuthentication
     {
-        private readonly ISMTP _smtp;
-        private readonly GAccountingDbContext _accounting;
-        private readonly ILogger<AuthenticationService> _logger;
+        private readonly ISMTP? _smtp;
+        private readonly GAccountingDbContext? _accounting;
+        private readonly ILogger<AuthenticationService>? _logger;
 
+        public AuthenticationService()
+        {
+            _accounting = new GAccountingDbContext();
+            _smtp = (ISMTP)new SMTP();
+        }
         public AuthenticationService(ILogger<AuthenticationService> logger, ISMTP smtp, GAccountingDbContext accounting)
         {
             _logger = logger;
@@ -25,7 +33,7 @@ namespace Accounting.Services
         {
             string tkn = string.Empty;
             JWTOptions jwtOptions = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings").Get<JWTOptions>()!;
-            DateTime expiration = DateTime.UtcNow.AddHours(jwtOptions.ExpirationHours);
+            DateTime expiration = DateTime.Now.AddMinutes(jwtOptions.ExpirationHours);
 
             // Generate token
             JwtSecurityToken token = CreateJwtToken(
@@ -36,7 +44,7 @@ namespace Accounting.Services
             );
             JwtSecurityTokenHandler tokenHandler = new();
 
-            _logger.LogInformation("JWT Token created for UserId: " + user.Id);
+            _logger!.LogInformation("JWT Token created for UserId: " + user.Id);
 
             // Stringfy base64 token
             tkn = tokenHandler.WriteToken(token);
@@ -44,13 +52,13 @@ namespace Accounting.Services
             // Log into sessions for first time
             if (!string.IsNullOrEmpty(tkn))
             {
-                if (!await _accounting.SessionMgrs.AnyAsync(x => x.Token == tkn))
+                if (!await _accounting!.SessionMgrs.AnyAsync(x => x.Token == tkn))
                 {
                     await _accounting.SessionMgrs.AddAsync(new SessionMgr()
                     {
                         Token = tkn,
                         Status = 0,
-                        UseDate = DateTimeOffset.Now
+                        UseDate = DateTime.Now,
                     });
                     await _accounting.SaveChangesAsync();
                 }
@@ -129,12 +137,12 @@ namespace Accounting.Services
             };
 
             // Send
-            await _smtp.SendEmailAsync(smtpModel);
+            await _smtp!.SendEmailAsync(smtpModel);
         }
 
         public async Task<bool> VerifyTokenAsync(string token)
         {
-            long count = await _accounting.SessionMgrs.CountAsync(x => x.Token == token);
+            long count = await _accounting!.SessionMgrs.CountAsync(x => x.Token == token);
             if (count > 0)
             {
                 List<SessionMgr> sessions = await _accounting.SessionMgrs.Where(x => x.Token == token).OrderBy(x => x.UseDate).ToListAsync();
@@ -148,10 +156,9 @@ namespace Accounting.Services
                     // Insert into sessions log
                     await _accounting.SessionMgrs.AddAsync(new SessionMgr()
                     {
-                        Id = session.Id,
                         Token = token,
                         Status = 0,
-                        UseDate = DateTimeOffset.Now
+                        UseDate = DateTime.Now/*SystemClock.Instance.GetCurrentInstant().InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault())*/
                     });
                     await _accounting.SaveChangesAsync();
                 }
@@ -163,12 +170,16 @@ namespace Accounting.Services
             }
         }
 
-        public bool IsTokenExpired(DateTimeOffset? useDate)
+        public bool IsTokenExpired(/*ZonedDateTime*/ DateTime? useDate)
         {
             if (useDate != null)
             {
-                TimeSpan diff = useDate?.Subtract(DateTimeOffset.Now) ?? new TimeSpan();
-                return diff.TotalMinutes > 5; // per minute
+                DateTime now = DateTime.Now;
+                int diff = (int)now.Subtract(useDate.Value).TotalMinutes;
+                /*  LocalDateTime now = SystemClock.Instance.GetCurrentInstant().InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault()).LocalDateTime;
+                  LocalDateTime regDate = useDate.Value.LocalDateTime;
+                  int diff = Period.Between(regDate, now, PeriodUnits.Minutes).ToDuration().Minutes;*/
+                return diff > 5; // per minute
             }
             return false;
         }

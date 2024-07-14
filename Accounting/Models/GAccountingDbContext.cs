@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace Accounting.Models;
 
@@ -42,7 +44,11 @@ public partial class GAccountingDbContext : DbContext
     public virtual DbSet<UserSession> UserSessions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql("Host=194.60.231.81:5432;Database=G_Accounting_DB;Username=postgres;Password=Maham@7796");
+    {
+        optionsBuilder.UseNpgsql("Host=194.60.231.81:5432;Database=G_Accounting_DB;Username=postgres;Password=Maham@7796", x => x.UseNodaTime());
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -135,11 +141,7 @@ public partial class GAccountingDbContext : DbContext
 
             entity.ToTable("SessionMGR");
 
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasIdentityOptions(null, null, 10000000000L, 1000000000000000000L, null, null)
-                .HasDefaultValueSql("nextval('seq_t_dept')");
-            entity.Property(e => e.UseDate).HasColumnType("time with time zone");
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
         });
 
         modelBuilder.Entity<Status>(entity =>
@@ -200,26 +202,6 @@ public partial class GAccountingDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.SessionInfo).HasColumnType("json");
         });
-
-        modelBuilder.HasSequence("SEQ_User")
-            .HasMin(100000000L)
-            .HasMax(1000000000000000L);
-
-        modelBuilder.HasSequence("SEQ_Contact")
-            .HasMin(100000000L)
-            .HasMax(1000000000000000L);
-
-        modelBuilder.HasSequence("SEQ_UserInfo")
-            .HasMin(100000000L)
-            .HasMax(1000000000000000L);
-
-        modelBuilder.HasSequence("SEQ_UserRole")
-            .HasMin(100000000L)
-            .HasMax(1000000000000000L);
-
-        modelBuilder.HasSequence("SessionMGR_Id_seq")
-            .HasMin(100000000L)
-            .HasMax(1000000000000000L);
 
         OnModelCreatingPartial(modelBuilder);
     }

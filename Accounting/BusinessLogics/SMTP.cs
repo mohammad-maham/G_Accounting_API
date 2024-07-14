@@ -7,7 +7,11 @@ namespace Accounting.BusinessLogics
 {
     public class SMTP : ISMTP
     {
-        private readonly ILogger<SMTP> _logger;
+        private readonly ILogger<SMTP>? _logger;
+        public SMTP()
+        {
+            
+        }
         public SMTP(ILogger<SMTP> logger)
         {
             _logger = logger;
@@ -20,7 +24,8 @@ namespace Accounting.BusinessLogics
             {
                 EnableSsl = smtp.Options!.EnableSSL,
                 UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(smtp.Options!.Username, smtp.Options!.Password)
+                Credentials = new NetworkCredential(smtp.Options!.Username, smtp.Options!.Password),
+                DeliveryMethod = SmtpDeliveryMethod.Network,
             };
 
             // Create email message
