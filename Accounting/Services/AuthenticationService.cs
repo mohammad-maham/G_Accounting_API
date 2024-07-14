@@ -26,6 +26,8 @@ namespace Accounting.Services
             string tkn = string.Empty;
             JWTOptions jwtOptions = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings").Get<JWTOptions>()!;
             DateTime expiration = DateTime.UtcNow.AddHours(jwtOptions.ExpirationHours);
+
+            // Generate token
             JwtSecurityToken token = CreateJwtToken(
                 CreateClaims(user, jwtOptions),
                 CreateSigningCredentials(jwtOptions),
@@ -36,7 +38,10 @@ namespace Accounting.Services
 
             _logger.LogInformation("JWT Token created for UserId: " + user.Id);
 
+            // Stringfy base64 token
             tkn = tokenHandler.WriteToken(token);
+
+            // Log into sessions for first time
             if (!string.IsNullOrEmpty(tkn))
             {
                 if (!await _accounting.SessionMgrs.AnyAsync(x => x.Token == tkn))
@@ -50,6 +55,7 @@ namespace Accounting.Services
                     await _accounting.SaveChangesAsync();
                 }
             }
+
             return tkn;
         }
 
@@ -66,18 +72,21 @@ namespace Accounting.Services
 
         private List<Claim> CreateClaims(User user, JWTOptions jwtOptions)
         {
+            string userId = user.Id.ToString();
+            string mobile = user.Mobile.ToString();
+            string nationalCode = user.NationalCode.ToString();
+
             try
             {
                 List<Claim> claims =
-                [
-                new Claim(JwtRegisteredClaimNames.Sub, jwtOptions.JwtRegisteredClaimNamesSub),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.MobilePhone, user.Mobile.ToString()),
-                new Claim(ClaimTypes.PrimarySid, user.NationalCode.ToString())
-            ];
-
+                    [
+                    new Claim(JwtRegisteredClaimNames.Sub, jwtOptions.JwtRegisteredClaimNamesSub),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, userId),
+                    new Claim(ClaimTypes.MobilePhone, mobile),
+                    new Claim(ClaimTypes.PrimarySid, nationalCode)
+                ];
                 return claims;
             }
             catch (Exception e)
@@ -89,12 +98,8 @@ namespace Accounting.Services
 
         private SigningCredentials CreateSigningCredentials(JWTOptions jwtOptions)
         {
-            return new SigningCredentials(
-                new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(jwtOptions.SymmetricSecurityKey)
-                ),
-                SecurityAlgorithms.HmacSha256
-            );
+            byte[] key = Encoding.UTF8.GetBytes(jwtOptions.SymmetricSecurityKey);
+            return new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
         }
 
         public async Task SendOTPEmailAsync(OTPEmail email)
@@ -111,6 +116,7 @@ namespace Accounting.Services
             mailBody.AppendFormat("<h1>Verification code: </h1>");
             mailBody.AppendFormat("<br />");
             mailBody.AppendFormat("<p>{0}</p>", email.OTP);
+            mailBody.AppendFormat("<h5>Gold Marketing</h5>");
 
             string body = mailBody.ToString();
 
@@ -121,6 +127,8 @@ namespace Accounting.Services
                 Subject = email.Subject,
                 Body = body
             };
+
+            // Send
             await _smtp.SendEmailAsync(smtpModel);
         }
 
@@ -137,6 +145,7 @@ namespace Accounting.Services
                 }
                 else
                 {
+                    // Insert into sessions log
                     await _accounting.SessionMgrs.AddAsync(new SessionMgr()
                     {
                         Id = session.Id,
