@@ -17,7 +17,7 @@ namespace Accounting.BusinessLogics
             _auth = auth;
         }
 
-        public async Task<string> GetSignin(long NationalCode, long Mobile)
+        public async Task<string> GetSigninAsync(long NationalCode, long Mobile)
         {
             User? user = await
                 _accounting
@@ -27,9 +27,9 @@ namespace Accounting.BusinessLogics
 
         }
 
-        public async Task<User?> GetSignup(User? user)
+        public async Task<User?> GetSignupAsync(User? user)
         {
-            if (user != null && !await IsExistUser(user.Id))
+            if (user != null && !await IsExistUserAsync(user.Id))
             {
                 await _accounting.Users.AddAsync(user);
                 await _accounting.SaveChangesAsync();
@@ -38,7 +38,7 @@ namespace Accounting.BusinessLogics
             return user;
         }
 
-        public async Task<bool> IsExistUser(long userId)
+        public async Task<bool> IsExistUserAsync(long userId)
         {
             return await _accounting.Users.AnyAsync(x => x.Id == userId);
         }

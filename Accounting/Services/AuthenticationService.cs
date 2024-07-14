@@ -1,5 +1,6 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -9,13 +10,15 @@ namespace Accounting.Services
 {
     public class AuthenticationService : IAuthentication
     {
-        private readonly ILogger<AuthenticationService> _logger;
         private readonly ISMTP _smtp;
+        private readonly GAccountingDbContext _accounting;
+        private readonly ILogger<AuthenticationService> _logger;
 
-        public AuthenticationService(ILogger<AuthenticationService> logger, ISMTP smtp)
+        public AuthenticationService(ILogger<AuthenticationService> logger, ISMTP smtp, GAccountingDbContext accounting)
         {
             _logger = logger;
             _smtp = smtp;
+            _accounting = accounting;
         }
 
         public string CreateToken(User user)
@@ -104,6 +107,48 @@ namespace Accounting.Services
                 Body = body
             };
             await _smtp.SendEmailAsync(smtpModel);
+        }
+
+        public async Task<bool> VerifyTokenAsync(string token)
+        {
+            long count = await _accounting.SessionMgrs.Where(x => x.Token == token).CountAsync();
+            if (count > 0)
+            {
+                DateTimeOffset? lastTokenUseDate = await _accounting.SessionMgrs.Where(x => x.Token == token).Select(x => x.UseDate).MaxAsync();
+                if (lastTokenUseDate != null)
+                {
+                    TimeSpan diff = lastTokenUseDate?.Subtract(DateTimeOffset.Now) ?? new TimeSpan();
+                    if (diff.TotalMinutes > 5) { return false; }
+                    else
+                    {
+                        await _accounting.SessionMgrs.AddAsync(new SessionMgr() { Token = token, Status = 0 });
+                    }
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool IsTokenExpired(string token)
+        {
+            JwtSecurityToken jwtSecurityToken;
+            try
+            {
+                jwtSecurityToken = new JwtSecurityToken(token);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return jwtSecurityToken.ValidTo < DateTime.UtcNow;
         }
     }
 }

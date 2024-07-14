@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Accounting.BusinessLogics.IBusinessLogics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 
 namespace Accounting.Helpers
@@ -10,30 +10,34 @@ namespace Accounting.Helpers
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class AuthorizeAttribute : Attribute, IAuthorizationFilter
     {
+        private readonly IAuthentication _auth;
+        private readonly ILogger<AuthorizeAttribute> _logger;
+        public AuthorizeAttribute(ILogger<AuthorizeAttribute> logger, IAuthentication auth)
+        {
+            _logger = logger;
+            _auth = auth;
+        }
+
         public void OnAuthorization(AuthorizationFilterContext context)
         {
             StringValues user = context.HttpContext.Request.Headers[HeaderNames.Authorization];
+
             AuthenticationHeaderValue.TryParse(user, out AuthenticationHeaderValue? headerValue);
-            if (headerValue == null || (headerValue != null && (headerValue.Parameter == null || IsTokenExpired(headerValue.Parameter))))
+
+            if (headerValue == null || headerValue.Parameter == null)
             {
-                context.Result = new JsonResult(new { message = "Unauthorized" })
+                context.Result = new JsonResult(new { message = "Unauthorized!" })
                 { StatusCode = StatusCodes.Status401Unauthorized };
             }
-        }
-
-        private bool IsTokenExpired(string token)
-        {
-            JwtSecurityToken jwtSecurityToken;
-            try
+            else
             {
-                jwtSecurityToken = new JwtSecurityToken(token);
+                bool isValidToken = _auth.VerifyTokenAsync(headerValue.Parameter).Result;
+                if (!isValidToken)
+                {
+                    context.Result = new JsonResult(new { message = "Unauthorized!" })
+                    { StatusCode = StatusCodes.Status401Unauthorized };
+                }
             }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return jwtSecurityToken.ValidTo < DateTime.UtcNow;
         }
     }
 }

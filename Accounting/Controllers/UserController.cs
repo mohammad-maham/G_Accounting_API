@@ -28,7 +28,7 @@ namespace Accounting.Controllers
             string token = string.Empty;
             if (NationalCode != 0 && Mobile != 0)
             {
-                token = await _login.GetSignin(NationalCode, Mobile);
+                token = await _login.GetSigninAsync(NationalCode, Mobile);
                 if (!string.IsNullOrEmpty(token))
                 {
                     await _auth.SendOTPEmailAsync(otpEmail);
@@ -50,7 +50,7 @@ namespace Accounting.Controllers
             User? registeredUser = null;
             if (user.NationalCode != 0 && user.Mobile != 0)
             {
-                registeredUser = await _login.GetSignup(user);
+                registeredUser = await _login.GetSignupAsync(user);
                 return Ok(new ApiResponse(200, registeredUser));
             }
             else
