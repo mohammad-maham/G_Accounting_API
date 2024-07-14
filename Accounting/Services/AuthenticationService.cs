@@ -126,33 +126,27 @@ namespace Accounting.Services
 
         public async Task<bool> VerifyTokenAsync(string token)
         {
-            long count = await _accounting.SessionMgrs.Where(x => x.Token == token).CountAsync();
+            long count = await _accounting.SessionMgrs.CountAsync(x => x.Token == token);
             if (count > 0)
             {
                 List<SessionMgr> sessions = await _accounting.SessionMgrs.Where(x => x.Token == token).OrderBy(x => x.UseDate).ToListAsync();
                 SessionMgr session = sessions.Last();
-                DateTimeOffset? lastTokenUseDate = session.UseDate;
-                if (lastTokenUseDate != null)
-                {
-                    TimeSpan diff = lastTokenUseDate?.Subtract(DateTimeOffset.Now) ?? new TimeSpan();
-                    if (diff.TotalMinutes > 5) { return false; }
-                    else
-                    {
-                        await _accounting.SessionMgrs.AddAsync(new SessionMgr()
-                        {
-                            Id = session.Id,
-                            Token = token,
-                            Status = 0,
-                            UseDate = DateTimeOffset.Now
-                        });
-                        await _accounting.SaveChangesAsync();
-                    }
-                    return true;
-                }
-                else
+                if (IsTokenExpired(session.UseDate))
                 {
                     return false;
                 }
+                else
+                {
+                    await _accounting.SessionMgrs.AddAsync(new SessionMgr()
+                    {
+                        Id = session.Id,
+                        Token = token,
+                        Status = 0,
+                        UseDate = DateTimeOffset.Now
+                    });
+                    await _accounting.SaveChangesAsync();
+                }
+                return true;
             }
             else
             {
@@ -160,19 +154,14 @@ namespace Accounting.Services
             }
         }
 
-        public bool IsTokenExpired(string token)
+        public bool IsTokenExpired(DateTimeOffset? useDate)
         {
-            JwtSecurityToken jwtSecurityToken;
-            try
+            if (useDate != null)
             {
-                jwtSecurityToken = new JwtSecurityToken(token);
+                TimeSpan diff = useDate?.Subtract(DateTimeOffset.Now) ?? new TimeSpan();
+                return diff.TotalMinutes > 5; // per minute
             }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return jwtSecurityToken.ValidTo < DateTime.UtcNow;
+            return false;
         }
     }
 }

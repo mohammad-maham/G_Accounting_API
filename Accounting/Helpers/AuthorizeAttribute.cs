@@ -26,7 +26,7 @@ namespace Accounting.Helpers
 
             if (headerValue == null || headerValue.Parameter == null)
             {
-                context.Result = new JsonResult(new { message = "Unauthorized!" })
+                context.Result = new JsonResult(new { message = "UnAuthorized!" })
                 { StatusCode = StatusCodes.Status401Unauthorized };
             }
             else
@@ -34,7 +34,7 @@ namespace Accounting.Helpers
                 bool isValidToken = _auth.VerifyTokenAsync(headerValue.Parameter).Result;
                 if (!isValidToken)
                 {
-                    context.Result = new JsonResult(new { message = "Unauthorized!" })
+                    context.Result = new JsonResult(new { message = "UnAuthorized!" })
                     { StatusCode = StatusCodes.Status401Unauthorized };
                 }
             }
