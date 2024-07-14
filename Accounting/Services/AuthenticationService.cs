@@ -172,5 +172,12 @@ namespace Accounting.Services
             }
             return false;
         }
+
+        public string GenerateOTP(int digits)
+        {
+            Random generator = new Random();
+            string otp = generator.Next(0, 1000000).ToString("D6");
+            return otp;
+        }
     }
 }

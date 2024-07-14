@@ -8,5 +8,6 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         Task SendOTPEmailAsync(OTPEmail email);
         Task<bool> VerifyTokenAsync(string token);
         bool IsTokenExpired(DateTimeOffset? useDate);
+        string GenerateOTP(int digits);
     }
 }
