@@ -1,4 +1,7 @@
-﻿namespace Accounting.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Accounting.Models;
 
 public partial class Status
 {

@@ -29,6 +29,8 @@ public partial class GAccountingDbContext : DbContext
 
     public virtual DbSet<RoleDataAccess> RoleDataAccesses { get; set; }
 
+    public virtual DbSet<SessionMgr> SessionMgrs { get; set; }
+
     public virtual DbSet<Status> Statuses { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -40,9 +42,7 @@ public partial class GAccountingDbContext : DbContext
     public virtual DbSet<UserSession> UserSessions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseNpgsql("Host=194.60.231.81:5432;Database=G_Accounting_DB;Username=postgres;Password=Maham@7796");
-    }
+        => optionsBuilder.UseNpgsql("Host=194.60.231.81:5432;Database=G_Accounting_DB;Username=postgres;Password=Maham@7796");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -129,6 +129,19 @@ public partial class GAccountingDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
         });
 
+        modelBuilder.Entity<SessionMgr>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("SessionMGR_pkey");
+
+            entity.ToTable("SessionMGR");
+
+            entity.Property(e => e.Id)
+                .UseIdentityAlwaysColumn()
+                .HasIdentityOptions(null, null, 10000000000L, 1000000000000000000L, null, null)
+                .HasDefaultValueSql("nextval('seq_t_dept')");
+            entity.Property(e => e.UseDate).HasColumnType("time with time zone");
+        });
+
         modelBuilder.Entity<Status>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("Status_pkey");
@@ -150,7 +163,9 @@ public partial class GAccountingDbContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(50);
             entity.Property(e => e.Mobile).HasPrecision(11);
             entity.Property(e => e.NationalCode).HasPrecision(10);
-            entity.Property(e => e.Otp).HasColumnName("OTP");
+            entity.Property(e => e.Otpinfo)
+                .HasColumnType("json")
+                .HasColumnName("OTPInfo");
         });
 
         modelBuilder.Entity<UserInfo>(entity =>
@@ -185,7 +200,24 @@ public partial class GAccountingDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.SessionInfo).HasColumnType("json");
         });
+
         modelBuilder.HasSequence("SEQ_User")
+            .HasMin(100000000L)
+            .HasMax(1000000000000000L);
+
+        modelBuilder.HasSequence("SEQ_Contact")
+            .HasMin(100000000L)
+            .HasMax(1000000000000000L);
+
+        modelBuilder.HasSequence("SEQ_UserInfo")
+            .HasMin(100000000L)
+            .HasMax(1000000000000000L);
+
+        modelBuilder.HasSequence("SEQ_UserRole")
+            .HasMin(100000000L)
+            .HasMax(1000000000000000L);
+
+        modelBuilder.HasSequence("SessionMGR_Id_seq")
             .HasMin(100000000L)
             .HasMax(1000000000000000L);
 

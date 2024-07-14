@@ -1,4 +1,7 @@
-﻿namespace Accounting.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Accounting.Models;
 
 public partial class User
 {
@@ -14,5 +17,5 @@ public partial class User
 
     public decimal Mobile { get; set; }
 
-    public int? Otp { get; set; }
+    public string? Otpinfo { get; set; }
 }
