@@ -3,8 +3,6 @@ using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using NodaTime;
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -20,7 +18,7 @@ namespace Accounting.Services
         public AuthenticationService()
         {
             _accounting = new GAccountingDbContext();
-            _smtp = (ISMTP)new SMTP();
+            _smtp = new SMTP();
         }
         public AuthenticationService(ILogger<AuthenticationService> logger, ISMTP smtp, GAccountingDbContext accounting)
         {
@@ -137,7 +135,8 @@ namespace Accounting.Services
             };
 
             // Send
-            await _smtp!.SendEmailAsync(smtpModel);
+            await _smtp!.SendEmailViaGoogleApiAsync(smtpModel);
+            //await _smtp!.SendEmailAsync(smtpModel);
         }
 
         public async Task<bool> VerifyTokenAsync(string token)
@@ -186,7 +185,7 @@ namespace Accounting.Services
 
         public string GenerateOTP(int digits)
         {
-            Random generator = new Random();
+            Random generator = new();
             string otp = generator.Next(0, 1000000).ToString("D6");
             return otp;
         }
