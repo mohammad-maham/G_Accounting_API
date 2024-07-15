@@ -69,7 +69,7 @@ public partial class GAccountingDbContext : DbContext
 
             entity.ToTable("Contact");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasDefaultValueSql("nextval('public.SEQ_Contact')");
             entity.Property(e => e.Addresses).HasColumnType("json[]");
             entity.Property(e => e.Mobiles).HasColumnType("numeric(11,0)[]");
             entity.Property(e => e.Tells).HasColumnType("numeric(11,0)[]");
@@ -179,12 +179,12 @@ public partial class GAccountingDbContext : DbContext
 
             entity.ToTable("UserInfo");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).HasDefaultValueSql("nextval('public.SEQ_UserInfo')");
             entity.Property(e => e.FatherName).HasMaxLength(100);
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.Gender).HasColumnType("bit(1)");
             entity.Property(e => e.LastName).HasMaxLength(100);
-            entity.Property(e => e.ShahkarInfo).HasColumnType("json");
+            entity.Property(e => e.SedadInfo).HasColumnType("json");
         });
 
         modelBuilder.Entity<UserRole>(entity =>

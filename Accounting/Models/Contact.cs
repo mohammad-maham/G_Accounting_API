@@ -12,11 +12,11 @@ public partial class Contact
 
     public short Status { get; set; }
 
-    public Instant RegDate { get; set; }
+    public DateTime RegDate { get; set; }
 
     public int RegionId { get; set; }
 
-    public List<string>? Addresses { get; set; }
+    public string? Addresses { get; set; }
 
     public List<decimal>? Tells { get; set; }
 

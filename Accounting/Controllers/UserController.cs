@@ -1,5 +1,6 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Errors;
+using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +31,7 @@ namespace Accounting.Controllers
                 token = await _users.GetSigninAsync(username, password);
                 if (!string.IsNullOrEmpty(token))
                 {
-                    User? user = await _users.FindUserInfoAsync(username, password);
+                    User? user = await _users.FindUserAsync(username, password);
                     if (user != null)
                     {
                         long otp = long.Parse(_auth.GenerateOTP(6));
@@ -65,7 +66,7 @@ namespace Accounting.Controllers
         {
             if (!string.IsNullOrEmpty(username) && username != "0")
             {
-                User? user = await _users.FindUserInfoAsync(username);
+                User? user = await _users.FindUserAsync(username);
                 if (user != null)
                 {
                     long otp = long.Parse(_auth.GenerateOTP(6));
@@ -82,7 +83,7 @@ namespace Accounting.Controllers
         {
             if (verify != null && verify.OTP != null && verify.OTP != 0 && !string.IsNullOrEmpty(verify.Username) && verify.Username != "0")
             {
-                User? user = await _users.FindUserInfoAsync(verify.Username);
+                User? user = await _users.FindUserAsync(verify.Username);
                 if (user != null)
                 {
                     bool isValid = _auth.VerifyOTPAsync(user, verify.OTP.Value);
@@ -99,7 +100,7 @@ namespace Accounting.Controllers
         {
             if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
             {
-                User? user = await _users.FindUserInfoAsync(username);
+                User? user = await _users.FindUserAsync(username);
                 if (user != null)
                 {
                     await _users.SetPasswordAsync(username, password);
@@ -107,7 +108,32 @@ namespace Accounting.Controllers
                 }
             }
             return BadRequest(new ApiResponse(500));
+        }
 
+        [HttpPost]
+        [Authorize]
+        [Route("[action]")]
+        public async Task<IActionResult> CompleteProile([FromBody] UserProfile profile)
+        {
+            if (profile != null)
+            {
+                UserInfo userInfo = await _users.InsertUserInfoAsync(profile);
+                return Ok(new ApiResponse(200, userInfo));
+            }
+            return BadRequest(new ApiResponse(500));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("[action]")]
+        public async Task<IActionResult> SubmitContact([FromBody] UserContact userContact)
+        {
+            if (userContact != null)
+            {
+                Contact contact = await _users.InsertUserContactsAsync(userContact);
+                return Ok(new ApiResponse(200, contact));
+            }
+            return Ok(new ApiResponse(200));
         }
     }
 }

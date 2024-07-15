@@ -11,8 +11,21 @@ namespace Accounting.Helpers
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class AuthorizeAttribute : Attribute, IAuthorizationFilter
     {
-        private readonly IAuthentication _auth;
-        private readonly ILogger<AuthorizeAttribute> _logger;
+        private readonly IAuthentication? _auth;
+        private readonly ILogger<AuthorizeAttribute>? _logger;
+
+        public AuthorizeAttribute()
+        {
+            ILoggerFactory? factory = LoggerFactory.Create(builder =>
+            {
+                builder.AddConsole();
+            });
+
+            ILogger<AuthorizeAttribute>? logger = factory.CreateLogger<AuthorizeAttribute>();
+            _logger = logger;
+            _auth ??= (new AuthenticationService());
+        }
+
         public AuthorizeAttribute(ILogger<AuthorizeAttribute> logger, IAuthentication auth)
         {
             _logger = logger;
@@ -32,7 +45,7 @@ namespace Accounting.Helpers
             }
             else
             {
-                bool isValidToken = _auth.VerifyTokenAsync(headerValue.Parameter).Result;
+                bool isValidToken = _auth!.VerifyTokenAsync(headerValue.Parameter).Result;
                 if (!isValidToken)
                 {
                     context.Result = new JsonResult(new { message = "Unauthorized!" })
