@@ -168,6 +168,9 @@ public partial class GAccountingDbContext : DbContext
             entity.Property(e => e.Otpinfo)
                 .HasColumnType("json")
                 .HasColumnName("OTPInfo");
+            entity.Property(e => e.Password).HasPrecision(100);
+            entity.Property(e => e.UserName).HasMaxLength(50);
+
         });
 
         modelBuilder.Entity<UserInfo>(entity =>

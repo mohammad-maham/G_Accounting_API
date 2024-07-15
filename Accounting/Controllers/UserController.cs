@@ -10,29 +10,40 @@ namespace Accounting.Controllers
     public class UserController : ControllerBase
     {
         private readonly ILogger<UserController> _logger;
-        private readonly IUsers _login;
+        private readonly IUsers _users;
         private readonly IAuthentication _auth;
 
-        public UserController(ILogger<UserController> logger, IUsers login, IAuthentication auth)
+        public UserController(ILogger<UserController> logger, IUsers users, IAuthentication auth)
         {
             _logger = logger;
-            _login = login;
+            _users = users;
             _auth = auth;
         }
 
         [HttpGet]
         [Route("[action]")]
-        public async Task<IActionResult> SignIn(long NationalCode, long Mobile)
+        public async Task<IActionResult> SignIn(string username, string password)
         {
-            OTPEmail otpEmail = new();
             string token = string.Empty;
-            if (NationalCode != 0 && Mobile != 0)
+            if (!string.IsNullOrEmpty(username) && username != "0" && !string.IsNullOrEmpty(password) && password != "0")
             {
-                token = await _login.GetSigninAsync(NationalCode, Mobile);
-                /*if (!string.IsNullOrEmpty(token))
+                token = await _users.GetSigninAsync(username, password);
+                if (!string.IsNullOrEmpty(token))
                 {
-                    await _auth.SendOTPEmailAsync(new OTPEmail() { OTP = 123456, To = "mehrdadnjfs@gmail.com", Subject = "Mehrdad" });
-                }*/
+                    User? user = await _users.FindUserInfoAsync(username, password);
+                    if (user != null)
+                    {
+                        long otp = long.Parse(_auth.GenerateOTP(6));
+                        await _auth.SendOTPEmailAsync(new OTPEmail()
+                        {
+                            OTP = otp,
+                            Email = user!.Email,
+                            Subject = "Login Verifing",
+                            Mobile = user.Mobile,
+                            NationalCode = user.NationalCode
+                        });
+                    }
+                }
             }
             else
             {
@@ -43,20 +54,74 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
         [Route("[action]")]
         public async Task<IActionResult> SignUp([FromBody] User user)
         {
             User? registeredUser = null;
             if (user.NationalCode != 0 && user.Mobile != 0)
             {
-                registeredUser = await _login.GetSignupAsync(user);
+                registeredUser = await _users.GetSignupAsync(user);
                 return Ok(new ApiResponse(200, registeredUser));
             }
-            else
+            return BadRequest(new ApiResponse(502, "The current user is already registered!"));
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ForgotPassword(string username)
+        {
+            if (!string.IsNullOrEmpty(username) && username != "0")
             {
-                return BadRequest(new ApiResponse(502, "The current user is already registered!"));
+                User? user = await _users.FindUserInfoAsync(username);
+                if (user != null)
+                {
+                    long otp = long.Parse(_auth.GenerateOTP(6));
+                    await _auth.SendOTPEmailAsync(new OTPEmail()
+                    {
+                        OTP = otp,
+                        Email = user!.Email,
+                        Subject = "Forgot Password Verifing",
+                        Mobile = user.Mobile,
+                        NationalCode = user.NationalCode
+                    });
+                    return Ok();
+                }
             }
+            return BadRequest(new ApiResponse(404));
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> VerifyOTP([FromBody] OTPVerify verify)
+        {
+            if (verify != null && verify.OTP != null && verify.OTP != 0 && !string.IsNullOrEmpty(verify.Username) && verify.Username != "0")
+            {
+                User? user = await _users.FindUserInfoAsync(verify.Username);
+                if (user != null)
+                {
+                    bool isValid = _auth.VerifyOTPAsync(user, verify.OTP.Value);
+                    if (isValid) { return Ok(new ApiResponse(200)); }
+                }
+            }
+            return BadRequest(new ApiResponse(401));
+        }
+
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> SetPassword(string username, string password)
+        {
+            if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+            {
+                User? user = await _users.FindUserInfoAsync(username);
+                if (user != null)
+                {
+                    await _users.SetPasswordAsync(username, password);
+                    return Ok(new ApiResponse(200));
+                }
+            }
+            return BadRequest(new ApiResponse(500));
+
         }
     }
 }

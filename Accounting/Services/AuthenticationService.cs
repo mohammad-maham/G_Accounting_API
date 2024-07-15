@@ -3,6 +3,7 @@ using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -110,33 +111,49 @@ namespace Accounting.Services
 
         public async Task SendOTPEmailAsync(OTPEmail email)
         {
-            // Get SMTP Options from appsettings.json
-            SMTPOptions smtpOptions = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build()
-                .GetSection("SmtpSettings")
-                .Get<SMTPOptions>()!;
+            /*  // Get SMTP Options from appsettings.json
+              SMTPOptions smtpOptions = new ConfigurationBuilder()
+                  .AddJsonFile("appsettings.json")
+                  .Build()
+                  .GetSection("SmtpSettings")
+                  .Get<SMTPOptions>()!;
 
-            // Create Html Body
-            StringBuilder mailBody = new();
-            mailBody.AppendFormat("<h1>Verification code: </h1>");
-            mailBody.AppendFormat("<br />");
-            mailBody.AppendFormat("<p>{0}</p>", email.OTP);
-            mailBody.AppendFormat("<h5>Gold Marketing</h5>");
+              // Create Html Body
+              StringBuilder mailBody = new();
+              mailBody.AppendFormat("<h1>Verification code: </h1>");
+              mailBody.AppendFormat("<br />");
+              mailBody.AppendFormat("<p>{0}</p>", email.OTP);
+              mailBody.AppendFormat("<h5>Gold Marketing</h5>");
 
-            string body = mailBody.ToString();
+              string body = mailBody.ToString();
 
-            SMTPModel smtpModel = new()
+              SMTPModel smtpModel = new()
+              {
+                  Options = smtpOptions,
+                  To = email.Email,
+                  Subject = email.Subject,
+                  Body = body
+              };
+
+              // Send
+              await _smtp!.SendEmailViaGoogleApiAsync(smtpModel);
+              //await _smtp!.SendEmailAsync(smtpModel);
+              */
+            User? user = await _accounting!
+                .Users
+                .FirstOrDefaultAsync(x => x.NationalCode == email.NationalCode && x.Mobile == email.Mobile && x.Email == email.Email);
+
+            if (user != null)
             {
-                Options = smtpOptions,
-                To = email.To,
-                Subject = email.Subject,
-                Body = body
-            };
-
-            // Send
-            await _smtp!.SendEmailViaGoogleApiAsync(smtpModel);
-            //await _smtp!.SendEmailAsync(smtpModel);
+                string otpInfo = JsonConvert.SerializeObject(new OTPInfo()
+                {
+                    Origin = email.Subject,
+                    OTP = email.OTP,
+                    OTPSendDateTime = DateTime.Now
+                });
+                user.Otpinfo = otpInfo;
+                await _accounting.SaveChangesAsync();
+            }
         }
 
         public async Task<bool> VerifyTokenAsync(string token)
@@ -157,7 +174,7 @@ namespace Accounting.Services
                     {
                         Token = token,
                         Status = 0,
-                        UseDate = DateTime.Now/*SystemClock.Instance.GetCurrentInstant().InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault())*/
+                        UseDate = DateTime.Now
                     });
                     await _accounting.SaveChangesAsync();
                 }
@@ -169,15 +186,12 @@ namespace Accounting.Services
             }
         }
 
-        public bool IsTokenExpired(/*ZonedDateTime*/ DateTime? useDate)
+        public bool IsTokenExpired(DateTime? useDate)
         {
             if (useDate != null)
             {
                 DateTime now = DateTime.Now;
                 int diff = (int)now.Subtract(useDate.Value).TotalMinutes;
-                /*  LocalDateTime now = SystemClock.Instance.GetCurrentInstant().InZone(DateTimeZoneProviders.Tzdb.GetSystemDefault()).LocalDateTime;
-                  LocalDateTime regDate = useDate.Value.LocalDateTime;
-                  int diff = Period.Between(regDate, now, PeriodUnits.Minutes).ToDuration().Minutes;*/
                 return diff > 5; // per minute
             }
             return false;
@@ -188,6 +202,21 @@ namespace Accounting.Services
             Random generator = new();
             string otp = generator.Next(0, 1000000).ToString("D6");
             return otp;
+        }
+
+        public bool VerifyOTPAsync(User user, long otp)
+        {
+            if (!string.IsNullOrEmpty(user.Otpinfo) && otp != 0)
+            {
+                OTPInfo otpInfo = JsonConvert.DeserializeObject<OTPInfo>(user.Otpinfo) ?? new OTPInfo();
+                DateTime now = DateTime.Now;
+                int diff = otpInfo.OTPSendDateTime.Subtract(now).Minutes; // per minute
+                if (diff < 5 && otpInfo.OTP == otp)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

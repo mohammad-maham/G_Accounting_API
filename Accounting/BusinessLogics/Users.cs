@@ -1,4 +1,5 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
+using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,14 +18,31 @@ namespace Accounting.BusinessLogics
             _auth = auth;
         }
 
-        public async Task<string> GetSigninAsync(long NationalCode, long Mobile)
+        public async Task<User?> FindUserInfoAsync(string username)
         {
-            User? user = await
-                _accounting
-                .Users
-                .FirstOrDefaultAsync(x => x.NationalCode == NationalCode && x.Mobile == Mobile);
-            return user != null ? await _auth.CreateTokenAsync(user) : "";
+            bool isUsername = !NationalCodeValidator.IsValidNationalCode(username);
 
+            return await _accounting.Users.FirstOrDefaultAsync(x =>
+            (x.UserName == username && isUsername) ||
+            (x.NationalCode == long.Parse(username) && !isUsername));
+        }
+
+        public async Task<User?> FindUserInfoAsync(string username, string password)
+        {
+            bool isUsername = !NationalCodeValidator.IsValidNationalCode(username);
+
+            return await _accounting.Users.FirstOrDefaultAsync(x =>
+            (x.NationalCode == long.Parse(username) && !isUsername) ||
+            (x.UserName == username && isUsername &&
+            x.Password == password));
+        }
+
+        [Obsolete]
+        public async Task<string> GetSigninAsync(string username, string password)
+        {
+            string? hashedPassword = SecurePasswordHasher.Hash(password);
+            User? user = await FindUserInfoAsync(username, hashedPassword);
+            return user != null ? await _auth.CreateTokenAsync(user) : "";
         }
 
         public async Task<User?> GetSignupAsync(User? user)
@@ -41,6 +59,18 @@ namespace Accounting.BusinessLogics
         public async Task<bool> IsExistUserAsync(long userId)
         {
             return await _accounting.Users.AnyAsync(x => x.Id == userId);
+        }
+
+        [Obsolete]
+        public async Task SetPasswordAsync(string username, string password)
+        {
+            User? user = await FindUserInfoAsync(username);
+            if (user != null)
+            {
+                string? hashedPassword = SecurePasswordHasher.Hash(password);
+                user.Password = hashedPassword;
+                await _accounting.SaveChangesAsync();
+            }
         }
     }
 }
