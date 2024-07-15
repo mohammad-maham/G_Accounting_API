@@ -29,6 +29,7 @@ namespace Accounting.BusinessLogics
         public async Task<User?> FindUserAsync(string username, string password)
         {
             bool isUsername = !NationalCodeValidator.IsValidNationalCode(username);
+            password = SecurePasswordHasher.Hash(password);
 
             User? user = await _accounting.Users.SingleOrDefaultAsync(x =>
             ((x.NationalCode == long.Parse(username) && !isUsername) ||
