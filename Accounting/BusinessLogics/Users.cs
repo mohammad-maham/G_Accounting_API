@@ -2,7 +2,6 @@
 using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.EntityFrameworkCore;
-
 namespace Accounting.BusinessLogics
 {
     public class Users : IUsers
@@ -31,10 +30,12 @@ namespace Accounting.BusinessLogics
         {
             bool isUsername = !NationalCodeValidator.IsValidNationalCode(username);
 
-            return await _accounting.Users.FirstOrDefaultAsync(x =>
-            (x.NationalCode == long.Parse(username) && !isUsername) ||
-            (x.UserName == username && isUsername &&
-            x.Password == password)) ?? new User();
+            User? user = await _accounting.Users.SingleOrDefaultAsync(x =>
+            ((x.NationalCode == long.Parse(username) && !isUsername) ||
+            (x.UserName == username && isUsername)) &&
+            x.Password == password);
+
+            return user;
         }
 
         public async Task<Contact?> FindUserContactAsync(long userId)
@@ -55,15 +56,21 @@ namespace Accounting.BusinessLogics
             return user != null ? await _auth.CreateTokenAsync(user) : "";
         }
 
-        public async Task<User?> GetSignupAsync(User? user)
+        public async Task<User?> GetSignupAsync(UserReq user)
         {
-            if (user != null && !await IsExistUserAsync(user.Id))
+            User userInf = new();
+            if (user != null && !await IsExistUserAsync((long)user.NationalCode))
             {
-                await _accounting.Users.AddAsync(user);
+                userInf.Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_user");
+                userInf.NationalCode = user.NationalCode;
+                userInf.Email = user.Email;
+                userInf.Mobile = user.Mobile;
+                userInf.RegDate = DateTime.Now;
+                userInf.Status = 0;
+                await _accounting.Users.AddAsync(userInf);
                 await _accounting.SaveChangesAsync();
             }
-            else { user = null; }
-            return user;
+            return userInf;
         }
 
         public async Task<Contact> InsertUserContactsAsync(UserContact userContact)
@@ -120,9 +127,9 @@ namespace Accounting.BusinessLogics
             return userInfo;
         }
 
-        public async Task<bool> IsExistUserAsync(long userId)
+        public async Task<bool> IsExistUserAsync(long nationalCode)
         {
-            return await _accounting.Users.AnyAsync(x => x.Id == userId);
+            return await _accounting.Users.AnyAsync(x => x.NationalCode == nationalCode);
         }
 
         [Obsolete]

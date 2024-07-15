@@ -4,13 +4,13 @@ using NodaTime;
 
 namespace Accounting.Models;
 
-public partial class User
+public partial class ArcUser
 {
     public long Id { get; set; }
 
     public decimal NationalCode { get; set; }
 
-    public DateTime RegDate { get; set; }
+    public Instant RegDate { get; set; }
 
     public short Status { get; set; }
 
@@ -23,12 +23,6 @@ public partial class User
     public string? UserName { get; set; }
 
     public string? Password { get; set; }
-}
 
-public class UserReq{
-    public decimal NationalCode { get; set; }
-
-    public string? Email { get; set; }
-
-    public decimal? Mobile { get; set; }
+    public Instant ArcDate { get; set; }
 }

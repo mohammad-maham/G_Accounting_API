@@ -38,6 +38,10 @@ namespace Accounting.Controllers
                         await _auth.SendOTPAsync(user, otp, "Login Verfication", true);
                     }
                 }
+                else
+                {
+                    return BadRequest(new ApiResponse(404));
+                }
             }
             else
             {
@@ -49,7 +53,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> SignUp([FromBody] User user)
+        public async Task<IActionResult> SignUp([FromBody] UserReq user)
         {
             User? registeredUser = null;
             if (user.NationalCode != 0 && user.Mobile != 0)

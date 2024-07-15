@@ -80,7 +80,7 @@ namespace Accounting.Services
         private List<Claim> CreateClaims(User user, JWTOptions jwtOptions)
         {
             string userId = user.Id.ToString();
-            string mobile = user.Mobile.ToString();
+            string mobile = user.Mobile.ToString()!;
             string nationalCode = user.NationalCode.ToString();
 
             try
@@ -91,7 +91,7 @@ namespace Accounting.Services
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
                     new Claim(ClaimTypes.NameIdentifier, userId),
-                    new Claim(ClaimTypes.MobilePhone, mobile),
+                    new Claim(ClaimTypes.MobilePhone, mobile!),
                     new Claim(ClaimTypes.PrimarySid, nationalCode)
                 ];
                 return claims;
@@ -166,7 +166,7 @@ namespace Accounting.Services
                     Source = smsOptions.Source,
                     Message = $"Verification code: #{otp}",
                 };
-                SMSModel smsModel = new() { Options = sms, Destination = (long)user.Mobile };
+                SMSModel smsModel = new() { Options = sms, Destination = (long)user.Mobile! };
 
                 // Send SMS
                 await _smtp!.SendSMSAsync(smsModel);

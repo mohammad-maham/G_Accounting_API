@@ -17,6 +17,8 @@ public partial class GAccountingDbContext : DbContext
 
     public virtual DbSet<Action> Actions { get; set; }
 
+    public virtual DbSet<ArcUser> ArcUsers { get; set; }
+
     public virtual DbSet<Contact> Contacts { get; set; }
 
     public virtual DbSet<DataAccessType> DataAccessTypes { get; set; }
@@ -56,11 +58,28 @@ public partial class GAccountingDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("Action_pkey");
 
-            entity.ToTable("Action");
+            entity.ToTable("Action", "archive");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Path).HasColumnType("character varying");
+        });
+
+        modelBuilder.Entity<ArcUser>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Arc_User_pkey");
+
+            entity.ToTable("Arc_User");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Email).HasMaxLength(50);
+            entity.Property(e => e.Mobile).HasPrecision(11);
+            entity.Property(e => e.NationalCode).HasPrecision(10);
+            entity.Property(e => e.Otpinfo)
+                .HasColumnType("json")
+                .HasColumnName("OTPInfo");
+            entity.Property(e => e.Password).HasMaxLength(100);
+            entity.Property(e => e.UserName).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Contact>(entity =>
@@ -158,19 +177,18 @@ public partial class GAccountingDbContext : DbContext
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("User_pkey");
-
+         
             entity.ToTable("User");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Email).HasMaxLength(50);
-            entity.Property(e => e.Mobile).HasPrecision(11);
+            entity.Property(e => e.Mobile).HasPrecision(12);
             entity.Property(e => e.NationalCode).HasPrecision(10);
             entity.Property(e => e.Otpinfo)
                 .HasColumnType("json")
                 .HasColumnName("OTPInfo");
-            entity.Property(e => e.Password).HasPrecision(100);
+            entity.Property(e => e.Password).HasMaxLength(100);
             entity.Property(e => e.UserName).HasMaxLength(50);
-
         });
 
         modelBuilder.Entity<UserInfo>(entity =>

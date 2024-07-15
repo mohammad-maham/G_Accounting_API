@@ -10,7 +10,7 @@
 
         public int RegionId { get; set; }
 
-        public string? Addresses { get; set; }
+        public List<string>? Addresses { get; set; }
 
         public List<decimal>? Tells { get; set; }
 
