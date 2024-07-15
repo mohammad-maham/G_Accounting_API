@@ -4,6 +4,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Gmail.v1;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+using RestSharp;
 using System.Net;
 using System.Net.Mail;
 
@@ -15,10 +16,7 @@ namespace Accounting.BusinessLogics
         private static readonly string[] Scopes = { GmailService.Scope.GmailSend, GmailService.Scope.GmailReadonly };
         private static readonly string ApplicationName = "Gold Marketing OAuth v1";
 
-        public SMTP()
-        {
-
-        }
+        public SMTP() { }
 
         public SMTP(ILogger<SMTP> logger)
         {
@@ -90,10 +88,42 @@ namespace Accounting.BusinessLogics
                 // Send email
                 _ = await request.ExecuteAsync();
             }
-            catch (FileNotFoundException e)
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
+        }
+
+        public async Task SendSMSAsync(SMSModel sms)
+        {
+            try
+            {
+                // BaseURL
+                RestClient client = new($"{sms.Options!.Host}/sendsms");
+                RestRequest request = new()
+                {
+                    Method = Method.Post
+                };
+
+                // Parameters
+                request.AddQueryParameter("username", sms.Options.Username);
+                request.AddQueryParameter("password", sms.Options.Password);
+                request.AddQueryParameter<long>("source", sms.Options.Source!.Value);
+                request.AddQueryParameter<long>("destination", sms.Destination!.Value);
+                request.AddQueryParameter("message", sms.Options.Message);
+
+                // Headers
+                request.AddHeader("content-type", "application/x-www-form-urlencoded");
+                request.AddHeader("cache-control", "no-cache");
+
+                // Send SMS
+                RestResponse response = await client.ExecutePostAsync(request);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
         }
     }
 }

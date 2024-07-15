@@ -109,50 +109,80 @@ namespace Accounting.Services
             return new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
         }
 
-        public async Task SendOTPEmailAsync(OTPEmail email)
+        public async Task SendOTPAsync(User user, long otp, string origin = "", bool isSMS = true)
         {
-            /*  // Get SMTP Options from appsettings.json
-              SMTPOptions smtpOptions = new ConfigurationBuilder()
-                  .AddJsonFile("appsettings.json")
-                  .Build()
-                  .GetSection("SmtpSettings")
-                  .Get<SMTPOptions>()!;
+            if (!isSMS)
+            {
+                // Get SMTP Options from appsettings.json
+                SMTPOptions smtpOptions = new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json")
+                    .Build()
+                    .GetSection("SMTPSettings")
+                    .Get<SMTPOptions>()!;
 
-              // Create Html Body
-              StringBuilder mailBody = new();
-              mailBody.AppendFormat("<h1>Verification code: </h1>");
-              mailBody.AppendFormat("<br />");
-              mailBody.AppendFormat("<p>{0}</p>", email.OTP);
-              mailBody.AppendFormat("<h5>Gold Marketing</h5>");
+                OTPEmail email = new()
+                {
+                    OTP = otp,
+                    Email = user.Email,
+                    Subject = origin,
+                    Mobile = user.Mobile,
+                    NationalCode = user.NationalCode
+                };
+                // Create Html Body
+                StringBuilder mailBody = new();
+                mailBody.AppendFormat("<h1>Verification code: </h1>");
+                mailBody.AppendFormat("<br />");
+                mailBody.AppendFormat("<p>{0}</p>", email.OTP);
+                mailBody.AppendFormat("<h5>Gold Marketing</h5>");
 
-              string body = mailBody.ToString();
+                string body = mailBody.ToString();
 
-              SMTPModel smtpModel = new()
-              {
-                  Options = smtpOptions,
-                  To = email.Email,
-                  Subject = email.Subject,
-                  Body = body
-              };
+                SMTPModel smtpModel = new()
+                {
+                    Options = smtpOptions,
+                    To = email.Email,
+                    Subject = email.Subject,
+                    Body = body
+                };
 
-              // Send
-              await _smtp!.SendEmailViaGoogleApiAsync(smtpModel);
-              //await _smtp!.SendEmailAsync(smtpModel);
-              */
-            User? user = await _accounting!
-                .Users
-                .FirstOrDefaultAsync(x => x.NationalCode == email.NationalCode && x.Mobile == email.Mobile && x.Email == email.Email);
+                // Send
+                await _smtp!.SendEmailViaGoogleApiAsync(smtpModel);
+                //await _smtp!.SendEmailAsync(smtpModel);
+            }
+            else
+            {
+                // SMS Configurations
+                SMSOptions smsOptions = new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json")
+                    .Build()
+                    .GetSection("SMSSettings")
+                    .Get<SMSOptions>()!;
 
+                SMSOptions sms = new()
+                {
+                    Host = smsOptions.Host,
+                    Username = smsOptions.Username,
+                    Password = smsOptions.Password,
+                    Source = smsOptions.Source,
+                    Message = $"Verification code: #{otp}",
+                };
+                SMSModel smsModel = new() { Options = sms, Destination = (long)user.Mobile };
+
+                // Send SMS
+                await _smtp!.SendSMSAsync(smsModel);
+            }
+
+            // Log OTP into user
             if (user != null)
             {
                 string otpInfo = JsonConvert.SerializeObject(new OTPInfo()
                 {
-                    Origin = email.Subject,
-                    OTP = email.OTP,
+                    Origin = origin,
+                    OTP = otp,
                     OTPSendDateTime = DateTime.Now
                 });
                 user.Otpinfo = otpInfo;
-                await _accounting.SaveChangesAsync();
+                await _accounting!.SaveChangesAsync();
             }
         }
 

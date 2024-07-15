@@ -34,14 +34,7 @@ namespace Accounting.Controllers
                     if (user != null)
                     {
                         long otp = long.Parse(_auth.GenerateOTP(6));
-                        await _auth.SendOTPEmailAsync(new OTPEmail()
-                        {
-                            OTP = otp,
-                            Email = user!.Email,
-                            Subject = "Login Verifing",
-                            Mobile = user.Mobile,
-                            NationalCode = user.NationalCode
-                        });
+                        await _auth.SendOTPAsync(user, otp, "Login Verfication", true);
                     }
                 }
             }
@@ -76,15 +69,8 @@ namespace Accounting.Controllers
                 if (user != null)
                 {
                     long otp = long.Parse(_auth.GenerateOTP(6));
-                    await _auth.SendOTPEmailAsync(new OTPEmail()
-                    {
-                        OTP = otp,
-                        Email = user!.Email,
-                        Subject = "Forgot Password Verifing",
-                        Mobile = user.Mobile,
-                        NationalCode = user.NationalCode
-                    });
-                    return Ok();
+                    await _auth.SendOTPAsync(user, otp, "Forgot Password Verfication", true);
+                    return Ok(new ApiResponse(200));
                 }
             }
             return BadRequest(new ApiResponse(404));
