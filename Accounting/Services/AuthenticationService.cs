@@ -1,5 +1,6 @@
 ﻿using Accounting.BusinessLogics;
 using Accounting.BusinessLogics.IBusinessLogics;
+using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -55,6 +56,7 @@ namespace Accounting.Services
                 {
                     await _accounting.SessionMgrs.AddAsync(new SessionMgr()
                     {
+                        Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_sessionmgr"),
                         Token = tkn,
                         Status = 0,
                         UseDate = DateTime.Now,
@@ -202,6 +204,7 @@ namespace Accounting.Services
                     // Insert into sessions log
                     await _accounting.SessionMgrs.AddAsync(new SessionMgr()
                     {
+                        Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_sessionmgr"),
                         Token = token,
                         Status = 0,
                         UseDate = DateTime.Now

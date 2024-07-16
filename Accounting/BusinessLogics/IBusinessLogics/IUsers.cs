@@ -5,7 +5,7 @@ namespace Accounting.BusinessLogics.IBusinessLogics
     public interface IUsers
     {
         Task<string> GetSigninAsync(string username, string password);
-        Task<User?> GetSignupAsync(UserReq user);
+        Task<User?> GetSignupAsync(UserRequest userReq);
         Task<bool> IsExistUserAsync(long nationalCode);
         Task<User?> FindUserAsync(string username);
         Task<User?> FindUserAsync(string username, string password);
@@ -14,5 +14,7 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         Task<UserInfo?> FindUserInfoAsync(long userId);
         Task<Contact> InsertUserContactsAsync(UserContact userContact);
         Task<Contact?> FindUserContactAsync(long userId);
+
+        Task<User?> FindUserByIdAsync(long userId);
     }
 }

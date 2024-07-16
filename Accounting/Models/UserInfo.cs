@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using NodaTime;
 
@@ -17,8 +16,6 @@ public partial class UserInfo
 
     public DateOnly? BirthDay { get; set; }
 
-    public BitArray? Gender { get; set; }
-
     public string? FatherName { get; set; }
 
     public DateTime RegDate { get; set; }
@@ -26,4 +23,6 @@ public partial class UserInfo
     public string? SedadInfo { get; set; }
 
     public short Status { get; set; }
+
+    public short? Gender { get; set; }
 }

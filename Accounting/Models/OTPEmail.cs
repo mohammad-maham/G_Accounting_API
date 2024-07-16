@@ -1,4 +1,6 @@
-﻿namespace Accounting.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Accounting.Models
 {
     public class OTPEmail
     {
@@ -16,9 +18,12 @@
         public string? Origin { get; set; }
     }
 
-    public partial class OTPVerify
+    public class OTPVerify
     {
+        [Required]
         public string? Username { get; set; }
+
+        [Required, Range(1, 6)]
         public long? OTP { get; set; }
     }
 }

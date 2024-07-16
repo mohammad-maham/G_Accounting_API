@@ -53,7 +53,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> SignUp([FromBody] UserReq user)
+        public async Task<IActionResult> SignUp([FromBody] UserRequest user)
         {
             User? registeredUser = null;
             if (user.NationalCode != 0 && user.Mobile != 0)
@@ -111,13 +111,13 @@ namespace Accounting.Controllers
                     return Ok(new ApiResponse(200));
                 }
             }
-            return BadRequest(new ApiResponse(500));
+            return BadRequest(new ApiResponse(404));
         }
 
         [HttpPost]
         [Authorize]
         [Route("[action]")]
-        public async Task<IActionResult> CompleteProile([FromBody] UserProfile profile)
+        public async Task<IActionResult> CompleteProfile([FromBody] UserProfile profile)
         {
             if (profile != null)
             {

@@ -12,6 +12,4 @@ public partial class Action
     public short Status { get; set; }
 
     public string Path { get; set; } = null!;
-
-    public DateTime ArcDate { get; set; }
 }
