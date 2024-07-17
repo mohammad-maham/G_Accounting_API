@@ -22,6 +22,7 @@ namespace Accounting.Services
             _accounting = new GAccountingDbContext();
             _smtp = new SMTP();
         }
+
         public AuthenticationService(ILogger<AuthenticationService> logger, ISMTP smtp, GAccountingDbContext accounting)
         {
             _logger = logger;
@@ -233,7 +234,7 @@ namespace Accounting.Services
         public string GenerateOTP(int digits)
         {
             Random generator = new();
-            string otp = generator.Next(0, 1000000).ToString("D6");
+            string otp = generator.Next(0, 1000000).ToString($"D{digits}");
             return otp;
         }
 
@@ -246,7 +247,13 @@ namespace Accounting.Services
                 int diff = otpInfo.OTPSendDateTime.Subtract(now).Minutes; // per minute
                 if (diff < 5 && otpInfo.OTP == otp)
                 {
-                    return true;
+                    User? validUser = _accounting!.Users.FirstOrDefault(x => x.Id == user.Id);
+                    if (validUser != null)
+                    {
+                        validUser.Status = 1;
+                        _accounting.SaveChanges();
+                        return true;
+                    }
                 }
             }
             return false;

@@ -2,16 +2,18 @@
 {
     public class ApiResponse
     {
-        public ApiResponse(int statusCode, dynamic? message = null)
+        public ApiResponse(int? statusCode = 200, string? message = "", dynamic? data = null)
         {
             StatusCode = statusCode;
-            Message = message ?? GetDefaultMessageForStatusCode(statusCode);
+            Message = string.IsNullOrEmpty(message) ? GetDefaultMessageForStatusCode(statusCode ?? 200) : message;
+            Data = data;
         }
 
-        public int StatusCode { get; set; }
-        public dynamic Message { get; set; }
+        public int? StatusCode { get; set; } = 200;
+        public dynamic? Data { get; set; }
+        public string? Message { get; set; }
 
-        private dynamic GetDefaultMessageForStatusCode(int statusCode)
+        private string GetDefaultMessageForStatusCode(int statusCode)
         {
             return statusCode switch
             {

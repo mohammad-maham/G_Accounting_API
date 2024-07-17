@@ -1,6 +1,7 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Helpers;
 using Accounting.Models;
+using Accounting.Services;
 using Google.Apis.Gmail.v1.Data;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -10,7 +11,7 @@ namespace Accounting.BusinessLogics
 {
     public class Users : IUsers
     {
-        private readonly ILogger<Users> _logger;
+        private readonly ILogger<Users>? _logger;
         private readonly GAccountingDbContext _accounting;
         private readonly IAuthentication _auth;
 

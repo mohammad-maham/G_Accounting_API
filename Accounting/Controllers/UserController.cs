@@ -1,4 +1,5 @@
-﻿using Accounting.BusinessLogics.IBusinessLogics;
+﻿using Accounting.BusinessLogics;
+using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Errors;
 using Accounting.Helpers;
 using Accounting.Models;
@@ -59,7 +60,12 @@ namespace Accounting.Controllers
             if (user.NationalCode != 0 && user.Mobile != 0)
             {
                 registeredUser = await _users.GetSignupAsync(user);
-                return Ok(new ApiResponse(200, registeredUser));
+                if (registeredUser != null)
+                {
+                    long otp = long.Parse(_auth.GenerateOTP(6));
+                    await _auth.SendOTPAsync(registeredUser, otp, "Register Verfication", true);
+                }
+                return Ok(new ApiResponse(data: registeredUser));
             }
             return BadRequest(new ApiResponse(502, "The current user is already registered!"));
         }
@@ -75,7 +81,7 @@ namespace Accounting.Controllers
                 {
                     long otp = long.Parse(_auth.GenerateOTP(6));
                     await _auth.SendOTPAsync(user, otp, "Forgot Password Verfication", true);
-                    return Ok(new ApiResponse(200));
+                    return Ok(new ApiResponse());
                 }
             }
             return BadRequest(new ApiResponse(404));
@@ -83,7 +89,7 @@ namespace Accounting.Controllers
 
         [HttpGet]
         [Route("[action]")]
-        public async Task<IActionResult> VerifyOTP([FromBody] OTPVerify verify)
+        public async Task<IActionResult> VerifyOTP([FromQuery] OTPVerify verify)
         {
             if (verify != null && verify.OTP != null && verify.OTP != 0 && !string.IsNullOrEmpty(verify.Username) && verify.Username != "0")
             {
@@ -91,7 +97,7 @@ namespace Accounting.Controllers
                 if (user != null)
                 {
                     bool isValid = _auth.VerifyOTPAsync(user, verify.OTP.Value);
-                    if (isValid) { return Ok(new ApiResponse(200)); }
+                    if (isValid) { return Ok(new ApiResponse()); }
                 }
             }
             return BadRequest(new ApiResponse(401));
@@ -108,7 +114,7 @@ namespace Accounting.Controllers
                 if (user != null)
                 {
                     await _users.SetPasswordAsync(username, password);
-                    return Ok(new ApiResponse(200));
+                    return Ok(new ApiResponse());
                 }
             }
             return BadRequest(new ApiResponse(404));
@@ -122,7 +128,7 @@ namespace Accounting.Controllers
             if (profile != null)
             {
                 UserInfo userInfo = await _users.InsertUserInfoAsync(profile);
-                return Ok(new ApiResponse(200, userInfo));
+                return Ok(new ApiResponse(data: userInfo));
             }
             return BadRequest(new ApiResponse(500));
         }
@@ -135,9 +141,26 @@ namespace Accounting.Controllers
             if (userContact != null)
             {
                 Contact contact = await _users.InsertUserContactsAsync(userContact);
-                return Ok(new ApiResponse(200, contact));
+                return Ok(new ApiResponse(data: contact));
             }
-            return Ok(new ApiResponse(200));
+            return Ok(new ApiResponse());
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> SendOTP(long userId)
+        {
+            if (userId != 0)
+            {
+                long otp = long.Parse(_auth.GenerateOTP(6));
+                User? user = await _users.FindUserByIdAsync(userId);
+                if (user != null)
+                {
+                    await _auth.SendOTPAsync(user, otp, "Verfication Code", true);
+                    return Ok(new ApiResponse());
+                }
+            }
+            return BadRequest(new ApiResponse(404));
         }
     }
 }

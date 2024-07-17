@@ -23,7 +23,7 @@ namespace Accounting.Models
         [Required]
         public string? Username { get; set; }
 
-        [Required, Range(1, 6)]
+        [Required, RegularExpression(@"[0-9]{6}", ErrorMessage = "Invalid verification code!")]
         public long? OTP { get; set; }
     }
 }
