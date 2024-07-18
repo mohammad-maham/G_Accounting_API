@@ -248,7 +248,7 @@ namespace Accounting.Services
                 if (diff < 5 && otpInfo.OTP == otp)
                 {
                     User? validUser = _accounting!.Users.FirstOrDefault(x => x.Id == user.Id);
-                    if (validUser != null)
+                    if (validUser != null && validUser.Id != 0)
                     {
                         validUser.Status = 1;
                         _accounting.SaveChanges();

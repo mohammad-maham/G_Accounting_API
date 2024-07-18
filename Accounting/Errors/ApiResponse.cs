@@ -17,12 +17,12 @@
         {
             return statusCode switch
             {
-                200 => "success!",
-                400 => "bad request!",
-                401 => "unauthorized!",
-                404 => "data not found!",
-                500 => "the system infrastructure has encountered a problem!",
-                501 => "verification timeouted!",
+                200 => "عملیات با موفقیت انجام یافت",
+                400 => "درخواست قابل پردازش نمی باشد!",
+                401 => "درخواست فاقد اعتبار معتبر می باشد!",
+                404 => "داده یافت نشد!",
+                500 => "زیرساخت سیستم با مشکل مواجه شده است!",
+                501 => "زمان تأییدیه به پایان رسیده است!",
                 _ => null
             };
         }

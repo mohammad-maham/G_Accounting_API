@@ -4,14 +4,18 @@ namespace Accounting.Models
 {
     public class UserRequest
     {
-        [Required, RegularExpression(@"[0-9]{10}", ErrorMessage = "Invalid national code!")]
+        [Display(Name = "کد ملی")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [RegularExpression(@"[0-9]{10}", ErrorMessage = "مقدار {0} نامعتبر می باشد")]
         public decimal NationalCode { get; set; }
 
-        [Required]
-        [EmailAddress]
+        [Display(Name = "رایانامه")]
+        [EmailAddress(ErrorMessage = "لطفا {0} معتبری را وارد کنید")]
         public string? Email { get; set; }
 
-        [Required, RegularExpression(@"[0-9]{10}", ErrorMessage = "Invalid mobile, must be not started with 0 or 98 precodes!")]
+        [Display(Name = "موبایل")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [RegularExpression(@"[0-9]{10}", ErrorMessage = "مقدار {0} نامعتبر می باشد، می بایست بدون صفر و پیش کد وارد گردد")]
         public decimal? Mobile { get; set; }
     }
 }

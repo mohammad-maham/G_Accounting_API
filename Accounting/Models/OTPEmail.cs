@@ -20,10 +20,13 @@ namespace Accounting.Models
 
     public class OTPVerify
     {
-        [Required]
+        [Display(Name = "نام کاربری")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string? Username { get; set; }
 
-        [Required, RegularExpression(@"[0-9]{6}", ErrorMessage = "Invalid verification code!")]
+        [Display(Name = "کد OTP")]
+        [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
+        [RegularExpression(@"[0-9]{6}", ErrorMessage = "کد OTP نا معتبر می باشد")]
         public long? OTP { get; set; }
     }
 }

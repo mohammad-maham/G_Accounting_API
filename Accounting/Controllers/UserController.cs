@@ -1,5 +1,4 @@
-﻿using Accounting.BusinessLogics;
-using Accounting.BusinessLogics.IBusinessLogics;
+﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Errors;
 using Accounting.Helpers;
 using Accounting.Models;
@@ -46,7 +45,7 @@ namespace Accounting.Controllers
             }
             else
             {
-                return BadRequest(new ApiResponse(502, "Please set parameters!"));
+                return BadRequest(new ApiResponse(502, "لطفا پارامتر های ورودی را بازبینی کنید"));
             }
 
             return Ok(token);
@@ -60,14 +59,14 @@ namespace Accounting.Controllers
             if (user.NationalCode != 0 && user.Mobile != 0)
             {
                 registeredUser = await _users.GetSignupAsync(user);
-                if (registeredUser != null)
+                if (registeredUser != null && registeredUser.Id != 0)
                 {
                     long otp = long.Parse(_auth.GenerateOTP(6));
                     await _auth.SendOTPAsync(registeredUser, otp, "Register Verfication", true);
+                    return Ok(new ApiResponse(data: registeredUser));
                 }
-                return Ok(new ApiResponse(data: registeredUser));
             }
-            return BadRequest(new ApiResponse(502, "The current user is already registered!"));
+            return BadRequest(new ApiResponse(502, "با کدملی وارد شده، قبلا کاربری ثبت نام کرده است!"));
         }
 
         [HttpPost]
@@ -77,7 +76,7 @@ namespace Accounting.Controllers
             if (!string.IsNullOrEmpty(username) && username != "0")
             {
                 User? user = await _users.FindUserAsync(username);
-                if (user != null)
+                if (user != null && user.Id != 0)
                 {
                     long otp = long.Parse(_auth.GenerateOTP(6));
                     await _auth.SendOTPAsync(user, otp, "Forgot Password Verfication", true);
