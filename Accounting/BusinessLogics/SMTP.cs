@@ -4,6 +4,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Gmail.v1;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+using Org.BouncyCastle.Pqc.Crypto.Lms;
 using RestSharp;
 using System.Net;
 using System.Net.Mail;
@@ -13,14 +14,19 @@ namespace Accounting.BusinessLogics
     public class SMTP : ISMTP
     {
         private readonly ILogger<SMTP>? _logger;
+        private readonly IConfiguration _config;
         private static readonly string[] Scopes = { GmailService.Scope.GmailSend, GmailService.Scope.GmailReadonly };
         private static readonly string ApplicationName = "Gold Marketing OAuth v1";
 
-        public SMTP() { }
+        public SMTP()
+        {
+            _config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
+        }
 
         public SMTP(ILogger<SMTP> logger)
         {
             _logger = logger;
+            _config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
         }
 
         public async Task SendEmailAsync(SMTPModel smtp)
@@ -123,7 +129,45 @@ namespace Accounting.BusinessLogics
             {
                 Console.WriteLine(e.Message);
             }
+        }
 
+        public async Task SendSMSAsync(string message, long mobile)
+        {
+            // SMS Configurations
+            SMSOptions smsOptions = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build()
+                .GetSection("SMSSettings")
+                .Get<SMSOptions>()!;
+
+            try
+            {
+                // BaseURL
+                RestClient client = new($"{smsOptions!.Host}/sendsms");
+                RestRequest request = new()
+                {
+                    Method = Method.Post
+                };
+
+                // Parameters
+                request.AddQueryParameter("username", smsOptions.Username);
+                request.AddQueryParameter("password", smsOptions.Password);
+                request.AddQueryParameter<long>("source", smsOptions.Source!.Value);
+                request.AddQueryParameter<long>("destination", mobile);
+                request.AddQueryParameter("message", message);
+
+                // Headers
+                request.AddHeader("content-type", "application/x-www-form-urlencoded");
+                request.AddHeader("cache-control", "no-cache");
+
+                // Send SMS
+                RestResponse response = await client.ExecutePostAsync(request);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
     }
 }

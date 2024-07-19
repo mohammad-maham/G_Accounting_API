@@ -118,6 +118,7 @@ namespace Accounting.Services
             {
                 // Get SMTP Options from appsettings.json
                 SMTPOptions smtpOptions = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json")
                     .Build()
                     .GetSection("SMTPSettings")
@@ -156,6 +157,7 @@ namespace Accounting.Services
             {
                 // SMS Configurations
                 SMSOptions smsOptions = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json")
                     .Build()
                     .GetSection("SMSSettings")
