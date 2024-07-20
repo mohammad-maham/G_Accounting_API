@@ -68,7 +68,7 @@ namespace Accounting.BusinessLogics
 
         public async Task<User?> GetSignupAsync(UserRequest userReq)
         {
-            User user = new();
+            User? user = new();
             if (userReq != null && !await IsExistUserAsync((long)userReq.NationalCode))
             {
                 user.Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_user");
@@ -79,6 +79,10 @@ namespace Accounting.BusinessLogics
                 user.Status = 0;
                 await _accounting.Users.AddAsync(user);
                 await _accounting.SaveChangesAsync();
+            }
+            else if (userReq != null && userReq.NationalCode != 0)
+            {
+                user = await FindUserAsync(userReq!.NationalCode.ToString());
             }
             return user;
         }
@@ -97,7 +101,7 @@ namespace Accounting.BusinessLogics
                         contact!.Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_contact");
                     contact.Status = userContact.Status;
                     contact.Tells = userContact.Tells;
-                    contact.Addresses = JsonConvert.SerializeObject( userContact.Addresses);
+                    contact.Addresses = JsonConvert.SerializeObject(userContact.Addresses);
                     contact.UserId = userContact.UserId;
                     contact.RegionId = userContact.RegionId;
                     contact.Mobiles = userContact.Mobiles;

@@ -3,6 +3,7 @@ using Accounting.Errors;
 using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace Accounting.Controllers
 {
@@ -59,11 +60,19 @@ namespace Accounting.Controllers
             if (user.NationalCode != 0 && user.Mobile != 0)
             {
                 registeredUser = await _users.GetSignupAsync(user);
-                if (registeredUser != null && registeredUser.Id != 0)
+                if (registeredUser != null && registeredUser.Id != 0 && registeredUser.Status == 0)
                 {
                     long otp = long.Parse(_auth.GenerateOTP(6));
                     await _auth.SendOTPAsync(registeredUser, otp, "Register Verfication", true);
-                    return Ok(new ApiResponse(data: registeredUser));
+                    string? jsonData = JsonConvert.SerializeObject(new User()
+                    {
+                        Id = registeredUser.Id,
+                        Email = registeredUser.Email,
+                        Mobile = registeredUser.Mobile,
+                        NationalCode = registeredUser.NationalCode,
+                        UserName = registeredUser.UserName
+                    });
+                    return Ok(new ApiResponse(data: jsonData));
                 }
             }
             return BadRequest(new ApiResponse(502, "با کدملی وارد شده، قبلا کاربری ثبت نام کرده است!"));
@@ -97,23 +106,34 @@ namespace Accounting.Controllers
                 {
                     bool isValid = _auth.VerifyOTPAsync(user, verify.OTP.Value);
                     if (isValid) { return Ok(new ApiResponse()); }
+                    else
+                    {
+                        return BadRequest(new ApiResponse(201));
+                    }
                 }
             }
             return BadRequest(new ApiResponse(401));
         }
 
-
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> SetPassword(string username, string password)
+        public async Task<IActionResult> SetPassword(string username, string password, long otp)
         {
             if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
             {
                 User? user = await _users.FindUserAsync(username);
                 if (user != null)
                 {
-                    await _users.SetPasswordAsync(username, password);
-                    return Ok(new ApiResponse());
+                    bool isValid = _auth.VerifyOTPAsync(user, otp);
+                    if (isValid)
+                    {
+                        await _users.SetPasswordAsync(username, password);
+                        return Ok(new ApiResponse());
+                    }
+                    else
+                    {
+                        return BadRequest(new ApiResponse(201));
+                    }
                 }
             }
             return BadRequest(new ApiResponse(404));
@@ -127,7 +147,8 @@ namespace Accounting.Controllers
             if (profile != null)
             {
                 UserInfo userInfo = await _users.InsertUserInfoAsync(profile);
-                return Ok(new ApiResponse(data: userInfo));
+                string? jsonData = JsonConvert.SerializeObject(userInfo);
+                return Ok(new ApiResponse(data: jsonData));
             }
             return BadRequest(new ApiResponse(500));
         }
@@ -140,7 +161,8 @@ namespace Accounting.Controllers
             if (userContact != null)
             {
                 Contact contact = await _users.InsertUserContactsAsync(userContact);
-                return Ok(new ApiResponse(data: contact));
+                string? jsonData = JsonConvert.SerializeObject(contact);
+                return Ok(new ApiResponse(data: jsonData));
             }
             return Ok(new ApiResponse());
         }
