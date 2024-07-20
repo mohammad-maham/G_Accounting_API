@@ -1,12 +1,8 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Helpers;
 using Accounting.Models;
-using Accounting.Services;
-using Google.Apis.Gmail.v1.Data;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Collections;
 namespace Accounting.BusinessLogics
 {
     public class Users : IUsers
@@ -62,8 +58,13 @@ namespace Accounting.BusinessLogics
         [Obsolete]
         public async Task<string> GetSigninAsync(string username, string password)
         {
+            string token = string.Empty;
             User? user = await FindUserAsync(username, password);
-            return user != null ? await _auth.CreateTokenAsync(user) : "";
+            if (user != null && user.NationalCode != 0 && user.Status == 1)
+            {
+                token = await _auth.CreateTokenAsync(user);
+            }
+            return token;
         }
 
         public async Task<User?> GetSignupAsync(UserRequest userReq)
@@ -89,16 +90,19 @@ namespace Accounting.BusinessLogics
 
         public async Task<Contact> InsertUserContactsAsync(UserContact userContact)
         {
-            Contact? contact = new Contact();
+            Contact? contact = new();
             User? user = await FindUserByIdAsync(userContact.UserId);
             Contact? cont = await FindUserContactAsync(userContact.UserId);
             if (user != null)
             {
-                contact = cont != null ? cont : new Contact();
+                contact = cont ?? new Contact();
                 try
                 {
                     if (cont == null)
+                    {
                         contact!.Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_contact");
+                    }
+
                     contact.Status = userContact.Status;
                     contact.Tells = userContact.Tells;
                     contact.Addresses = JsonConvert.SerializeObject(userContact.Addresses);
@@ -107,9 +111,14 @@ namespace Accounting.BusinessLogics
                     contact.Mobiles = userContact.Mobiles;
                     contact.RegDate = DateTime.Now;
                     if (cont == null)
+                    {
                         await _accounting.Contacts.AddAsync(contact);
+                    }
                     else
+                    {
                         _accounting.Contacts.Update(contact);
+                    }
+
                     await _accounting.SaveChangesAsync();
                 }
                 catch (Exception e)
@@ -123,20 +132,26 @@ namespace Accounting.BusinessLogics
 
         public async Task<UserInfo> InsertUserInfoAsync(UserProfile profile)
         {
-            UserInfo userInfo = new UserInfo();
+            UserInfo userInfo = new();
             User? user = await FindUserByIdAsync(profile.UserId);
             UserInfo? userinf = await FindUserInfoAsync(profile.UserId);
             if (user != null)
             {
-                userInfo = userinf != null ? userinf : new UserInfo();
+                userInfo = userinf ?? new UserInfo();
                 try
                 {
                     if (userinf == null)
+                    {
                         userInfo.Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_userinfo");
+                    }
+
                     userInfo.FirstName = profile.FirstName;
                     userInfo.LastName = profile.LastName;
                     if (!string.IsNullOrEmpty(profile.BirthDay))
+                    {
                         userInfo.BirthDay = DateOnly.Parse(profile.BirthDay!);
+                    }
+
                     userInfo.Gender = profile.Gender;
                     userInfo.UserId = profile.UserId;
                     userInfo.SedadInfo = null;
@@ -144,9 +159,14 @@ namespace Accounting.BusinessLogics
                     userInfo.FatherName = profile.FatherName;
                     userInfo.RegDate = DateTime.Now;
                     if (userinf == null)
+                    {
                         await _accounting.UserInfos.AddAsync(userInfo);
+                    }
                     else
+                    {
                         _accounting.UserInfos.Update(userInfo);
+                    }
+
                     await _accounting.SaveChangesAsync();
                 }
                 catch (Exception e)
@@ -174,5 +194,41 @@ namespace Accounting.BusinessLogics
                 await _accounting.SaveChangesAsync();
             }
         }
+
+        public async Task UpdateUserAsync(User updatedUser)
+        {
+            User? existUser = await FindUserByIdAsync(updatedUser.Id);
+            if (existUser != null && existUser.NationalCode != 0)
+            {
+                existUser.NationalCode = isValid(updatedUser.NationalCode) ? updatedUser.NationalCode : existUser.NationalCode;
+                existUser.Password = isValid(updatedUser.Password!) ? updatedUser.Password : existUser.Password;
+                existUser.Status = isValid(updatedUser.Status) ? updatedUser.Status : existUser.Status;
+                existUser.UserName = isValid(updatedUser.UserName!) ? updatedUser.UserName : existUser.UserName;
+                existUser.Otpinfo = isValid(updatedUser.Otpinfo!) ? updatedUser.Otpinfo : existUser.Otpinfo;
+                existUser.RegDate = isValid(updatedUser.RegDate) ? updatedUser.RegDate : existUser.RegDate;
+                existUser.Email = isValid(updatedUser.Email!) ? updatedUser.Email : existUser.Email;
+                existUser.Id = isValid(updatedUser.Id) ? updatedUser.Id : existUser.Id;
+                _accounting.Entry(existUser).State = EntityState.Modified;
+                await _accounting.SaveChangesAsync();
+            }
+        }
+
+        private bool isValid(dynamic data)
+        {
+            if (data != null)
+            {
+                if (data is string && !string.IsNullOrWhiteSpace(data))
+                    return true;
+                else if ((data is long || data is short || data is decimal || data is int) && data != 0)
+                    return true;
+                else if (data is bool)
+                    return true;
+                else if ((data is List<string> || data is List<long> || data is List<int> || data is List<decimal>) && data.Count > 0)
+                    return true;
+                else return false;
+            }
+            return false;
+        }
     }
 }
+

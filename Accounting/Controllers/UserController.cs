@@ -63,6 +63,8 @@ namespace Accounting.Controllers
                 registeredUser = await _users.GetSignupAsync(user);
                 if (registeredUser != null && registeredUser.Id != 0 && registeredUser.Status == 0)
                 {
+                    registeredUser.Status = 11; // "Waiting Send OTP"
+                    await _users.UpdateUserAsync(registeredUser);
                     long otp = long.Parse(_auth.GenerateOTP(6));
                     await _auth.SendOTPAsync(registeredUser, otp, "Register Verfication", true);
                     string? jsonData = JsonConvert.SerializeObject(new User()
@@ -73,6 +75,8 @@ namespace Accounting.Controllers
                         NationalCode = registeredUser.NationalCode,
                         UserName = registeredUser.UserName
                     });
+                    registeredUser.Status = 12; // "Waiting Confirm OTP"
+                    await _users.UpdateUserAsync(registeredUser);
                     return Ok(new ApiResponse(data: jsonData));
                 }
             }
@@ -106,7 +110,10 @@ namespace Accounting.Controllers
                 if (user != null)
                 {
                     bool isValid = _auth.VerifyOTPAsync(user, verify.OTP.Value);
-                    if (isValid) { return Ok(new ApiResponse()); }
+                    if (isValid) {
+                        user.Status = 14; // "Waiting Confirm Admin"
+                        await _users.UpdateUserAsync(user);
+                        return Ok(new ApiResponse()); }
                     else
                     {
                         return BadRequest(new ApiResponse(201));
@@ -125,10 +132,14 @@ namespace Accounting.Controllers
                 User? user = await _users.FindUserAsync(newPassword.NationalCode.ToString());
                 if (user != null)
                 {
+                    user.Status = 13; // "Waiting Submit Password"
+                    await _users.UpdateUserAsync(user);
                     bool isValid = _auth.VerifyOTPAsync(user, newPassword.OTP);
                     if (isValid)
                     {
                         await _users.SetPasswordAsync(newPassword.NationalCode.ToString(), newPassword.Password);
+                        user.Status = 14; // "Waiting Confirm Admin"
+                        await _users.UpdateUserAsync(user);
                         return Ok(new ApiResponse());
                     }
                     else
@@ -179,6 +190,8 @@ namespace Accounting.Controllers
                 if (user != null)
                 {
                     await _auth.SendOTPAsync(user, otp, "Verfication Code", true);
+                    user.Status = 12; // "Waiting Confirm OTP"
+                    await _users.UpdateUserAsync(user);
                     return Ok(new ApiResponse());
                 }
             }
