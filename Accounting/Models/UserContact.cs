@@ -24,10 +24,10 @@ namespace Accounting.Models
         public List<string>? Addresses { get; set; }
 
         [Display(Name = "تلفن")]
-        public List<decimal>? Tells { get; set; }
+        public List<long>? Tells { get; set; }
 
         [Display(Name = "موبایل")]
-        public List<decimal>? Mobiles { get; set; }
+        public List<long>? Mobiles { get; set; }
 
     }
 }

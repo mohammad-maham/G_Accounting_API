@@ -8,7 +8,7 @@ public partial class User
 {
     public long Id { get; set; }
 
-    public decimal NationalCode { get; set; }
+    public long NationalCode { get; set; }
 
     public DateTime RegDate { get; set; }
 
@@ -16,7 +16,7 @@ public partial class User
 
     public string? Email { get; set; }
 
-    public decimal? Mobile { get; set; }
+    public long? Mobile { get; set; }
 
     public string? Otpinfo { get; set; }
 

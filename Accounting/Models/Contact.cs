@@ -16,9 +16,9 @@ public partial class Contact
 
     public int RegionId { get; set; }
 
-    public List<decimal>? Tells { get; set; }
+    public List<long>? Tells { get; set; }
 
-    public List<decimal>? Mobiles { get; set; }
+    public List<long>? Mobiles { get; set; }
 
     public string? Addresses { get; set; }
 }

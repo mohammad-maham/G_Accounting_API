@@ -3,6 +3,7 @@ using Accounting.Errors;
 using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 
 namespace Accounting.Controllers
@@ -117,17 +118,17 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> SetPassword(string username, string password, long otp)
+        public async Task<IActionResult> SetPassword([FromBody] NewPassword newPassword)
         {
-            if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+            if (newPassword.NationalCode != 0 && !string.IsNullOrEmpty(newPassword.Password))
             {
-                User? user = await _users.FindUserAsync(username);
+                User? user = await _users.FindUserAsync(newPassword.NationalCode.ToString());
                 if (user != null)
                 {
-                    bool isValid = _auth.VerifyOTPAsync(user, otp);
+                    bool isValid = _auth.VerifyOTPAsync(user, newPassword.OTP);
                     if (isValid)
                     {
-                        await _users.SetPasswordAsync(username, password);
+                        await _users.SetPasswordAsync(newPassword.NationalCode.ToString(), newPassword.Password);
                         return Ok(new ApiResponse());
                     }
                     else

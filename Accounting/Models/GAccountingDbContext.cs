@@ -64,23 +64,6 @@ public partial class GAccountingDbContext : DbContext
             entity.Property(e => e.Path).HasColumnType("character varying");
         });
 
-        modelBuilder.Entity<ArcUser>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("Arc_User_pkey");
-
-            entity.ToTable("Arc_User");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Email).HasMaxLength(50);
-            entity.Property(e => e.Mobile).HasPrecision(11);
-            entity.Property(e => e.NationalCode).HasPrecision(10);
-            entity.Property(e => e.Otpinfo)
-                .HasColumnType("json")
-                .HasColumnName("OTPInfo");
-            entity.Property(e => e.Password).HasMaxLength(100);
-            entity.Property(e => e.UserName).HasMaxLength(50);
-        });
-
         modelBuilder.Entity<Contact>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("Contact_pkey");
@@ -89,8 +72,8 @@ public partial class GAccountingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Addresses).HasColumnType("jsonb");
-            entity.Property(e => e.Mobiles).HasColumnType("numeric(12,0)[]");
-            entity.Property(e => e.Tells).HasColumnType("numeric(12,0)[]");
+            entity.Property(e => e.Mobiles).HasColumnType("bigint[]");
+            entity.Property(e => e.Tells).HasColumnType("bigint[]");
         });
 
         modelBuilder.Entity<DataAccessType>(entity =>
@@ -181,8 +164,8 @@ public partial class GAccountingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Email).HasMaxLength(50);
-            entity.Property(e => e.Mobile).HasPrecision(12);
-            entity.Property(e => e.NationalCode).HasPrecision(10);
+            entity.Property(e => e.Mobile).HasColumnType("bigint");
+            entity.Property(e => e.NationalCode).HasColumnType("bigint");
             entity.Property(e => e.Otpinfo)
                 .HasColumnType("json")
                 .HasColumnName("OTPInfo");
