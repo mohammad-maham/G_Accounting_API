@@ -153,6 +153,18 @@ namespace Accounting.Controllers
             return BadRequest(new ApiResponse(404));
         }
 
+        [HttpPut]
+        [Route("[action]")]
+        public async Task<IActionResult> UpdateUser(User user)
+        {
+            if (user != null && user.Id != 0)
+            {
+                await _users.UpdateUserAsync(user);
+                return Ok(new ApiResponse());
+            }
+            return BadRequest(new ApiResponse(500));
+        }
+
         [HttpPost]
         [Authorize]
         [Route("[action]")]
@@ -214,8 +226,18 @@ namespace Accounting.Controllers
 
         [HttpPut]
         [Route("[action]")]
-        public async Task<IActionResult> UpdateUser()
+        public async Task<IActionResult> UpdateUserStatus(long? userId, short? status = 0)
         {
+            if (userId != null && userId != 0)
+            {
+                User? user = await _users.FindUserByIdAsync(userId.Value);
+                if (user != null && user.Id != 0)
+                {
+                    user.Status = status!.Value;
+                    await _users.UpdateUserAsync(user);
+                    return Ok(new ApiResponse());
+                }
+            }
             return BadRequest(new ApiResponse(500));
         }
     }
