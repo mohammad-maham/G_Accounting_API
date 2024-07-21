@@ -183,6 +183,22 @@ namespace Accounting.BusinessLogics
             return await _accounting.Users.AnyAsync(x => x.NationalCode == nationalCode);
         }
 
+        public async Task SaveUserSessionInfo(SessionInfo session)
+        {
+            User? user = await FindUserByIdAsync(session.UserId);
+            if (user != null && user.Id == session.UserId)
+            {
+                await _accounting.UserSessions.AddAsync(new UserSession()
+                {
+                    Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_usersession"),
+                    UserId = user.Id,
+                    SessionDate = DateTime.Now,
+                    SessionInfo = session.SessionJsonInfo!
+                });
+                await _accounting.SaveChangesAsync();
+            }
+        }
+
         [Obsolete]
         public async Task SetPasswordAsync(string username, string password)
         {

@@ -57,7 +57,7 @@ public partial class GAccountingDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("Action_pkey");
 
-            entity.ToTable("Action", "archive");
+            entity.ToTable("Action");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(100);

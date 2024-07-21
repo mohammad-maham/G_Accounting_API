@@ -16,5 +16,6 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         Task<Contact?> FindUserContactAsync(long userId);
         Task<User?> FindUserByIdAsync(long userId);
         Task UpdateUserAsync(User updatedUser);
+        Task SaveUserSessionInfo(SessionInfo session);
     }
 }

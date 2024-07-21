@@ -110,10 +110,12 @@ namespace Accounting.Controllers
                 if (user != null)
                 {
                     bool isValid = _auth.VerifyOTPAsync(user, verify.OTP.Value);
-                    if (isValid) {
+                    if (isValid)
+                    {
                         user.Status = 14; // "Waiting Confirm Admin"
                         await _users.UpdateUserAsync(user);
-                        return Ok(new ApiResponse()); }
+                        return Ok(new ApiResponse());
+                    }
                     else
                     {
                         return BadRequest(new ApiResponse(201));
@@ -196,6 +198,25 @@ namespace Accounting.Controllers
                 }
             }
             return BadRequest(new ApiResponse(404));
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> SaveSessionInfo([FromBody] SessionInfo session)
+        {
+            if (session != null && session.UserId != 0)
+            {
+                await _users.SaveUserSessionInfo(session);
+                return Ok(new ApiResponse());
+            }
+            return BadRequest(new ApiResponse(500));
+        }
+
+        [HttpPut]
+        [Route("[action]")]
+        public async Task<IActionResult> UpdateUser()
+        {
+            return BadRequest(new ApiResponse(500));
         }
     }
 }

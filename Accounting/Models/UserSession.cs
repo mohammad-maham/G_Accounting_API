@@ -10,7 +10,7 @@ public partial class UserSession
 
     public long UserId { get; set; }
 
-    public Instant SessionDate { get; set; }
+    public DateTime SessionDate { get; set; }
 
     public string SessionInfo { get; set; } = null!;
 }
