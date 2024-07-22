@@ -112,7 +112,7 @@ namespace Accounting.Controllers
                     bool isValid = _auth.VerifyOTPAsync(user, verify.OTP.Value);
                     if (isValid)
                     {
-                        user.Status = 14; // "Waiting Confirm Admin"
+                        user.Status = 1; // "ACTIVE"
                         await _users.UpdateUserAsync(user);
                         return Ok(new ApiResponse());
                     }
