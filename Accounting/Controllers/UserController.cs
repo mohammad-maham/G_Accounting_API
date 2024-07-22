@@ -61,7 +61,7 @@ namespace Accounting.Controllers
             if (user.NationalCode != 0 && user.Mobile != 0)
             {
                 registeredUser = await _users.GetSignupAsync(user);
-                if (registeredUser != null && registeredUser.Id != 0 && registeredUser.Status == 0)
+                if (registeredUser != null && registeredUser.Id != 0 && new int[] { 0, 11, 12 }.Contains(registeredUser.Status))
                 {
                     registeredUser.Status = 11; // "Waiting Send OTP"
                     await _users.UpdateUserAsync(registeredUser);

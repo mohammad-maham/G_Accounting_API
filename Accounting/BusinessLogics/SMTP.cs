@@ -100,7 +100,7 @@ namespace Accounting.BusinessLogics
             }
         }
 
-        public async Task SendSMSAsync(SMSModel sms)
+        public async Task SendAsanakSMSAsync(SMSModel sms)
         {
             try
             {
@@ -131,7 +131,7 @@ namespace Accounting.BusinessLogics
             }
         }
 
-        public async Task SendSMSAsync(string message, long mobile)
+        public async Task SendGoldOTPSMSAsync(SMSModel sms)
         {
             // SMS Configurations
             SMSOptions smsOptions = new ConfigurationBuilder()
@@ -144,21 +144,17 @@ namespace Accounting.BusinessLogics
             try
             {
                 // BaseURL
-                RestClient client = new($"{smsOptions!.Host}/sendsms");
+                RestClient client = new($"{smsOptions!.Host}/api/SMTP/SendOTPSMS");
                 RestRequest request = new()
                 {
                     Method = Method.Post
                 };
 
                 // Parameters
-                request.AddQueryParameter("username", smsOptions.Username);
-                request.AddQueryParameter("password", smsOptions.Password);
-                request.AddQueryParameter<long>("source", smsOptions.Source!.Value);
-                request.AddQueryParameter<long>("destination", mobile);
-                request.AddQueryParameter("message", message);
+                request.AddJsonBody(new { Mobile = sms.Destination!.Value.ToString(), OTP = sms.Options!.Message });
 
                 // Headers
-                request.AddHeader("content-type", "application/x-www-form-urlencoded");
+                request.AddHeader("content-type", "application/json");
                 request.AddHeader("cache-control", "no-cache");
 
                 // Send SMS

@@ -6,7 +6,7 @@ namespace Accounting.BusinessLogics.IBusinessLogics
     {
         Task SendEmailAsync(SMTPModel smtp);
         Task SendEmailViaGoogleApiAsync(SMTPModel smtp);
-        Task SendSMSAsync(SMSModel sms);
-        Task SendSMSAsync(string message, long mobile);
+        Task SendAsanakSMSAsync(SMSModel sms);
+        Task SendGoldOTPSMSAsync(SMSModel sms);
     }
 }

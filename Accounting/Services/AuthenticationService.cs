@@ -169,12 +169,14 @@ namespace Accounting.Services
                     Username = smsOptions.Username,
                     Password = smsOptions.Password,
                     Source = smsOptions.Source,
-                    Message = $"Verification code: #{otp}",
+                    //Message = $"Verification code: #{otp}",
+                    Message = $"{otp}",
                 };
                 SMSModel smsModel = new() { Options = sms, Destination = (long)user.Mobile! };
 
                 // Send SMS
-                await _smtp!.SendSMSAsync(smsModel);
+                //await _smtp!.SendAsanakSMSAsync(smsModel);
+                await _smtp!.SendGoldOTPSMSAsync(smsModel);
             }
 
             // Log OTP into user
