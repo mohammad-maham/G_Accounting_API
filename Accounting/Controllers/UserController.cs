@@ -3,7 +3,6 @@ using Accounting.Errors;
 using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 
 namespace Accounting.Controllers
@@ -23,17 +22,17 @@ namespace Accounting.Controllers
             _auth = auth;
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> SignIn(string username, string password)
+        public async Task<IActionResult> SignIn([FromBody] UsersVM usersVM)
         {
             string token = string.Empty;
-            if (!string.IsNullOrEmpty(username) && username != "0" && !string.IsNullOrEmpty(password) && password != "0")
+            if (!string.IsNullOrEmpty(usersVM.Username) && usersVM.Username != "0" && !string.IsNullOrEmpty(usersVM.Password) && usersVM.Password != "0")
             {
-                token = await _users.GetSigninAsync(username, password);
+                token = await _users.GetSigninAsync(usersVM.Username, usersVM.Password);
                 if (!string.IsNullOrEmpty(token))
                 {
-                    User? user = await _users.FindUserAsync(username, password);
+                    User? user = await _users.FindUserAsync(usersVM.Username, usersVM.Password);
                     if (user != null)
                     {
                         long otp = long.Parse(_auth.GenerateOTP(6));
@@ -85,11 +84,11 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> ForgotPassword(string username)
+        public async Task<IActionResult> ForgotPassword([FromBody] UsersVM usersVM)
         {
-            if (!string.IsNullOrEmpty(username) && username != "0")
+            if (!string.IsNullOrEmpty(usersVM.Username) && usersVM.Username != "0")
             {
-                User? user = await _users.FindUserAsync(username);
+                User? user = await _users.FindUserAsync(usersVM.Username);
                 if (user != null && user.Id != 0)
                 {
                     long otp = long.Parse(_auth.GenerateOTP(6));
@@ -100,7 +99,7 @@ namespace Accounting.Controllers
             return BadRequest(new ApiResponse(404));
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> VerifyOTP([FromQuery] OTPVerify verify)
         {
@@ -153,7 +152,7 @@ namespace Accounting.Controllers
             return BadRequest(new ApiResponse(404));
         }
 
-        [HttpPut]
+        [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> UpdateUser(User user)
         {
@@ -195,12 +194,12 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> SendOTP(long userId)
+        public async Task<IActionResult> SendOTP([FromBody] UsersVM usersVM)
         {
-            if (userId != 0)
+            if (usersVM.UserId != 0)
             {
                 long otp = long.Parse(_auth.GenerateOTP(6));
-                User? user = await _users.FindUserByIdAsync(userId);
+                User? user = await _users.FindUserByIdAsync(usersVM.UserId!.Value);
                 if (user != null)
                 {
                     await _auth.SendOTPAsync(user, otp, "Verfication Code", true);
@@ -224,16 +223,16 @@ namespace Accounting.Controllers
             return BadRequest(new ApiResponse(500));
         }
 
-        [HttpPut]
+        [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> UpdateUserStatus(long? userId, short? status = 0)
+        public async Task<IActionResult> UpdateUserStatus([FromBody] UsersVM usersVM)
         {
-            if (userId != null && userId != 0)
+            if (usersVM.UserId is not null and not 0)
             {
-                User? user = await _users.FindUserByIdAsync(userId.Value);
+                User? user = await _users.FindUserByIdAsync(usersVM.UserId!.Value);
                 if (user != null && user.Id != 0)
                 {
-                    user.Status = status!.Value;
+                    user.Status = usersVM.Status!.Value;
                     await _users.UpdateUserAsync(user);
                     return Ok(new ApiResponse());
                 }

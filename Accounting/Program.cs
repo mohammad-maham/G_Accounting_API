@@ -86,6 +86,7 @@ options => options.UseNodaTime()));
 
         builder.Services.AddScoped<IUsers, Users>();
         builder.Services.AddScoped<ISMTP, SMTP>();
+        builder.Services.AddScoped<IDashboard, Dashboard>();
         builder.Services.AddTransient<IAuthentication, AuthenticationService>();
 
         builder.Services.AddProblemDetails();
