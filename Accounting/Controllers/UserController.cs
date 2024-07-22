@@ -140,7 +140,7 @@ namespace Accounting.Controllers
                     if (isValid)
                     {
                         await _users.SetPasswordAsync(newPassword.NationalCode.ToString(), newPassword.Password);
-                        user.Status = 14; // "Waiting Confirm Admin"
+                        user.Status = 1; // "ACTIVATE"
                         await _users.UpdateUserAsync(user);
                         return Ok(new ApiResponse());
                     }
