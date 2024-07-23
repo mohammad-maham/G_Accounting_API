@@ -79,6 +79,7 @@ namespace Accounting.BusinessLogics
                 user.Status = 0;
                 await _accounting.Users.AddAsync(user);
                 await _accounting.SaveChangesAsync();
+                await InsertUserRoleByDefaultAsync(user.Id);
             }
             else if (userReq != null && userReq.NationalCode != 0)
             {
@@ -175,6 +176,20 @@ namespace Accounting.BusinessLogics
                 }
             }
             return userInfo;
+        }
+
+        public async Task InsertUserRoleByDefaultAsync(long userId)
+        {
+            UserRole userRole = new();
+            userRole.Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_userrole");
+            userRole.RoleId = 21; // By default is "CUSTOMER"
+            userRole.UserId = userId;
+            userRole.RegUserId = userId;
+            userRole.Status = 1;
+            userRole.RegDate = DateTime.Now;
+            await _accounting.UserRoles.AddAsync(userRole);
+            await _accounting.SaveChangesAsync();
+
         }
 
         public async Task<bool> IsExistUserAsync(long nationalCode)

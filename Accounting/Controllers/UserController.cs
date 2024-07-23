@@ -37,19 +37,15 @@ namespace Accounting.Controllers
                     {
                         long otp = long.Parse(_auth.GenerateOTP(6));
                         await _auth.SendOTPAsync(user, otp, "Login Verfication", true);
+                        return Ok(new ApiResponse(data: token));
                     }
                 }
                 else
                 {
-                    return BadRequest(new ApiResponse(404));
+                    return BadRequest(new ApiResponse(400));
                 }
             }
-            else
-            {
-                return BadRequest(new ApiResponse(502, "لطفا پارامتر های ورودی را بازبینی کنید"));
-            }
-
-            return Ok(token);
+            return BadRequest(new ApiResponse(404));
         }
 
         [HttpPost]

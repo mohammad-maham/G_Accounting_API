@@ -30,8 +30,8 @@ namespace Accounting.Controllers
                 User? existUser = await _users.FindUserByIdAsync(user.UserId!.Value);
                 if (existUser != null && existUser.Id != 0)
                 {
-                    UserInfo? userInfo = await _dashboard.GetUserInfoAsync(existUser.Id);
-                    string jsonData = JsonConvert.SerializeObject(userInfo);
+                    DashboardVM? dashboard = await _dashboard.GetUserInfoAsync(existUser.Id);
+                    string jsonData = JsonConvert.SerializeObject(dashboard);
                     return Ok(new ApiResponse(data: jsonData));
                 }
             }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using NodaTime;
-
-namespace Accounting.Models;
+﻿namespace Accounting.Models;
 
 public partial class UserInfo
 {

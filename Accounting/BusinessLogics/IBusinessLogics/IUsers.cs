@@ -17,5 +17,6 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         Task<User?> FindUserByIdAsync(long userId);
         Task UpdateUserAsync(User updatedUser);
         Task SaveUserSessionInfo(SessionInfo session);
+        Task InsertUserRoleByDefaultAsync(long userId);
     }
 }
