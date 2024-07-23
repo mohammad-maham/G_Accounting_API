@@ -79,6 +79,20 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
+        [Authorize]
+        [Route("[action]")]
+        public async Task<IActionResult> GetUserInfo([FromBody] User? user)
+        {
+            if (user != null && user.Id != 0)
+            {
+                UserInfo? userInfo = await _users.FindUserInfoAsync(user.Id);
+                string jsonData = JsonConvert.SerializeObject(userInfo);
+                return Ok(new ApiResponse(data: jsonData));
+            }
+            return BadRequest(new ApiResponse(404));
+        }
+
+        [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> ForgotPassword([FromBody] UsersVM usersVM)
         {
@@ -149,8 +163,9 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [Route("[action]")]
-        public async Task<IActionResult> UpdateUser(User user)
+        public async Task<IActionResult> UpdateUser([FromBody] User user)
         {
             if (user != null && user.Id != 0)
             {
@@ -208,6 +223,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [Route("[action]")]
         public async Task<IActionResult> SaveSessionInfo([FromBody] SessionInfo session)
         {
@@ -220,6 +236,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [Route("[action]")]
         public async Task<IActionResult> UpdateUserStatus([FromBody] UsersVM usersVM)
         {
