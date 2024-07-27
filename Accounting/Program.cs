@@ -30,7 +30,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(option =>
         {
-            option.SwaggerDoc("v1", new OpenApiInfo { Title = "Gold Marketing API's", Version = "v1", Description = ".NET Core 8 Web API" });
+            option.SwaggerDoc("v1", new OpenApiInfo { Title = "Gold Marketing Accounting API's", Version = "v1", Description = ".NET Core 8 Web API" });
             option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
