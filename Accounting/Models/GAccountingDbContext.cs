@@ -184,6 +184,7 @@ public partial class GAccountingDbContext : DbContext
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.LastName).HasMaxLength(100);
             entity.Property(e => e.SedadInfo).HasColumnType("json");
+            entity.Property(e => e.NationalCardImage).HasColumnType("json");
         });
 
         modelBuilder.Entity<UserRole>(entity =>

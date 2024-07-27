@@ -158,6 +158,7 @@ namespace Accounting.BusinessLogics
                     userInfo.Status = 0;
                     userInfo.FatherName = profile.FatherName;
                     userInfo.RegDate = DateTime.Now;
+                    userInfo.NationalCardImage = profile.NationalCardImage;
                     if (userinf == null)
                     {
                         await _accounting.UserInfos.AddAsync(userInfo);

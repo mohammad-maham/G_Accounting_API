@@ -21,4 +21,6 @@ public partial class UserInfo
     public short Status { get; set; }
 
     public short? Gender { get; set; }
+
+    public string? NationalCardImage { get; set; }
 }

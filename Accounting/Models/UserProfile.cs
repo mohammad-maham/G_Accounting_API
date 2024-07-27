@@ -28,5 +28,8 @@ namespace Accounting.Models
         [Display(Name = "نام پدر")]
         [MaxLength(100, ErrorMessage = "حداکثر مقدار {0} 100 کاراکتر می باشد")]
         public string? FatherName { get; set; }
+
+        [Display(Name = "عکس کارت ملی")]
+        public string? NationalCardImage { get; set; }
     }
 }
