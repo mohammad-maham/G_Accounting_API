@@ -15,5 +15,13 @@ namespace Accounting.Controllers
             AuthorizeAttribute authorizeAttribute = new();
             authorizeAttribute.OnAuthorization(context);
         }
+
+        [HttpGet]
+        [Route("[action]")]
+        public void GetUserInfo([FromBody] ActionExecutingContext context)
+        {
+            UserInfoAttribute userInfoAttribute = new();
+            userInfoAttribute.OnActionExecuting(context);
+        }
     }
 }
