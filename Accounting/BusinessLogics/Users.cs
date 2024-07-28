@@ -1,6 +1,7 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Helpers;
 using Accounting.Models;
+using Accounting.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 namespace Accounting.BusinessLogics
@@ -10,6 +11,12 @@ namespace Accounting.BusinessLogics
         private readonly ILogger<Users>? _logger;
         private readonly GAccountingDbContext _accounting;
         private readonly IAuthentication _auth;
+
+        public Users()
+        {
+            _accounting = new GAccountingDbContext();
+            _auth = new AuthenticationService();
+        }
 
         public Users(GAccountingDbContext accounting, ILogger<Users> logger, IAuthentication auth)
         {
@@ -86,6 +93,23 @@ namespace Accounting.BusinessLogics
                 user = await FindUserAsync(userReq!.NationalCode.ToString());
             }
             return user;
+        }
+
+        public async Task<UserInfo> GetUserInfoByToken(string token)
+        {
+            UserInfo? userInfo = new();
+            var sessions = await _accounting.UserInfos
+                .SelectMany(x =>
+                _accounting.SessionMgrs.Where(y => y.Token == token)
+                .DefaultIfEmpty(),
+                (ui, sm) => new { ui, sm })
+                .ToListAsync();
+
+            userInfo = sessions
+                .Select(x => x.ui)
+                .FirstOrDefault();
+
+            return userInfo;
         }
 
         public async Task<Contact> InsertUserContactsAsync(UserContact userContact)

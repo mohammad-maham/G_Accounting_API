@@ -18,5 +18,6 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         Task UpdateUserAsync(User updatedUser);
         Task SaveUserSessionInfo(SessionInfo session);
         Task InsertUserRoleByDefaultAsync(long userId);
+        Task<UserInfo> GetUserInfoByToken(string token);
     }
 }

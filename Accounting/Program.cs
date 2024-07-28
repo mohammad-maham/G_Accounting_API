@@ -90,6 +90,7 @@ options => options.UseNodaTime()));
         builder.Services.AddTransient<IAuthentication, AuthenticationService>();
 
         builder.Services.AddProblemDetails();
+        builder.Services.AddHttpContextAccessor();
 
         WebApplication app = builder.Build();
 

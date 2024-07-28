@@ -27,12 +27,13 @@ namespace Accounting.Controllers
         public async Task<IActionResult> SignIn([FromBody] UsersVM usersVM)
         {
             string token = string.Empty;
-            if (!string.IsNullOrEmpty(usersVM.Username) && usersVM.Username != "0" && !string.IsNullOrEmpty(usersVM.Password) && usersVM.Password != "0")
+            string? username = usersVM.Username ?? usersVM.NationalCode.ToString();
+            if ((!string.IsNullOrEmpty(username) && username != "0") && !string.IsNullOrEmpty(usersVM.Password) && usersVM.Password != "0")
             {
-                token = await _users.GetSigninAsync(usersVM.Username, usersVM.Password);
+                token = await _users.GetSigninAsync(username!, usersVM.Password);
                 if (!string.IsNullOrEmpty(token))
                 {
-                    User? user = await _users.FindUserAsync(usersVM.Username, usersVM.Password);
+                    User? user = await _users.FindUserAsync(username!, usersVM.Password);
                     if (user != null)
                     {
                         long otp = long.Parse(_auth.GenerateOTP(6));
@@ -191,6 +192,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Authorize]
+        //[UserInfo]
         [Route("[action]")]
         public async Task<IActionResult> SubmitContact([FromBody] UserContact userContact)
         {
