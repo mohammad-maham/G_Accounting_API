@@ -36,8 +36,8 @@ namespace Accounting.Controllers
                     User? user = await _users.FindUserAsync(username!, usersVM.Password);
                     if (user != null)
                     {
-                        long otp = long.Parse(_auth.GenerateOTP(6));
-                        await _auth.SendOTPAsync(user, otp, "Login Verfication", true);
+                        /*long otp = long.Parse(_auth.GenerateOTP(6));
+                        await _auth.SendOTPAsync(user, otp, "Login Verfication", true);*/
                         return Ok(new ApiResponse(data: token));
                     }
                 }

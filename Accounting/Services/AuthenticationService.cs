@@ -193,7 +193,7 @@ namespace Accounting.Services
             }
         }
 
-        public async Task<bool> VerifyTokenAsync(string token)
+        public async Task<bool> VerifyTokenAsync(string token, bool isLogToSession = true)
         {
             long count = await _accounting!.SessionMgrs.CountAsync(x => x.Token == token);
             if (count > 0)
@@ -206,15 +206,18 @@ namespace Accounting.Services
                 }
                 else
                 {
-                    // Insert into sessions log
-                    await _accounting.SessionMgrs.AddAsync(new SessionMgr()
+                    if (isLogToSession)
                     {
-                        Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_sessionmgr"),
-                        Token = token,
-                        Status = 0,
-                        UseDate = DateTime.Now
-                    });
-                    await _accounting.SaveChangesAsync();
+                        // Insert into sessions log
+                        await _accounting.SessionMgrs.AddAsync(new SessionMgr()
+                        {
+                            Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_sessionmgr"),
+                            Token = token,
+                            Status = 0,
+                            UseDate = DateTime.Now
+                        });
+                        await _accounting.SaveChangesAsync();
+                    }
                 }
                 return true;
             }
