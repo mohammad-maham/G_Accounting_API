@@ -1,5 +1,6 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Errors;
+using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -25,7 +26,14 @@ namespace Accounting.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetAuthorize([FromBody] AttributesVM attributes)
         {
-            bool isValid = await _auth!.VerifyTokenAsync(attributes.Token!, false);
+            //bool isValid = await _auth!.VerifyTokenAsync(attributes.Token!, false);
+            bool isValid = false;
+            long userId = TokenDecryptor.GetUserIdByToken(attributes.Token!);
+            if (userId != 0)
+            {
+                User? user = await _users.FindUserByIdAsync(userId);
+                isValid = user != null && user.Id != 0;
+            }
             return isValid ? Ok(new ApiResponse(data: "true")) : BadRequest(new ApiResponse(404, data: "false"));
         }
 
