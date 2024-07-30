@@ -26,12 +26,12 @@ public class Program
             opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
 
-       /* builder.Services.AddControllers()
-         .AddJsonOptions(options =>
-         {
-             options.JsonSerializerOptions.WriteIndented = true;
-             options.JsonSerializerOptions.Converters.Add(new CustomJsonConverterForType());
-         });*/
+        /* builder.Services.AddControllers()
+          .AddJsonOptions(options =>
+          {
+              options.JsonSerializerOptions.WriteIndented = true;
+              options.JsonSerializerOptions.Converters.Add(new CustomJsonConverterForType());
+          });*/
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -94,6 +94,7 @@ options => options.UseNodaTime()));
         builder.Services.AddScoped<IUsers, Users>();
         builder.Services.AddScoped<ISMTP, SMTP>();
         builder.Services.AddScoped<IDashboard, Dashboard>();
+        builder.Services.AddScoped<IActivityDomain, ActivityDomain>();
         builder.Services.AddTransient<IAuthentication, AuthenticationService>();
 
         builder.Services.AddProblemDetails();

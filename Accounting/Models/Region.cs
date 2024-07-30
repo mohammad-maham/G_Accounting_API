@@ -13,7 +13,7 @@ public partial class Region
 
     public short Status { get; set; }
 
-    public int ParentId { get; set; }
+    public int? ParentId { get; set; }
 
     public short ProvinceCode { get; set; }
 }
