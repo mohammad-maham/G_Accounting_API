@@ -41,7 +41,8 @@ namespace Accounting.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetUserInfo([FromBody] AttributesVM attributes)
         {
-            UserInfo? userInfo = await _users!.GetUserInfoByToken(attributes.Token!);
+            long userId = TokenDecryptor.GetUserIdByToken(attributes.Token!);
+            UserInfo? userInfo = await _users!.FindUserInfoAsync(userId);
             if (userInfo != null && userInfo.Id != 0)
             {
                 string jsonData = JsonConvert.SerializeObject(userInfo);
