@@ -41,7 +41,7 @@ namespace Accounting.Helpers
             if (headerValue != null && headerValue.Parameter != null)
             {
                 token = headerValue.Parameter;
-                userInfo = _users!.GetUserInfoByToken(token).Result;
+                userInfo = _users!.GetUserInfoByToken(token);
             }
             string jsonData = JsonConvert.SerializeObject(userInfo);
             context.HttpContext!.Request.Headers["UserInfo"] = jsonData;

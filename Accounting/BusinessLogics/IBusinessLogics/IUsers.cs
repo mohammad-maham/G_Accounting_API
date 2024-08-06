@@ -4,20 +4,20 @@ namespace Accounting.BusinessLogics.IBusinessLogics
 {
     public interface IUsers
     {
-        Task<string> GetSigninAsync(string username, string password);
-        Task<User?> GetSignupAsync(UserRequest userReq);
-        Task<bool> IsExistUserAsync(long nationalCode);
-        Task<User?> FindUserAsync(string username);
-        Task<User?> FindUserAsync(string username, string password);
-        Task SetPasswordAsync(string username, string password);
-        Task<UserInfo> InsertUserInfoAsync(UserProfile profile);
-        Task<UserInfo?> FindUserInfoAsync(long userId);
-        Task<Contact> InsertUserContactsAsync(UserContact userContact);
-        Task<Contact?> FindUserContactAsync(long userId);
-        Task<User?> FindUserByIdAsync(long userId);
-        Task UpdateUserAsync(User updatedUser);
-        Task SaveUserSessionInfo(SessionInfo session);
-        Task InsertUserRoleByDefaultAsync(long userId);
-        Task<UserInfo> GetUserInfoByToken(string token);
+        string GetSignin(string username, string password);
+        User? GetSignup(UserRequest userReq);
+        bool IsExistUser(long nationalCode);
+        User? FindUser(string username);
+        User? FindUser(string username, string password);
+        void SetPassword(string username, string password);
+        UserInfo InsertUserInfo(UserProfile profile);
+        UserInfo? FindUserInfo(long userId);
+        Contact InsertUserContacts(UserContact userContact);
+        Contact? FindUserContact(long userId);
+        User? FindUserById(long userId);
+        void UpdateUser(User updatedUser);
+        void SaveUserSessionInfo(SessionInfo session);
+        void InsertUserRoleByDefault(long userId);
+        UserInfo GetUserInfoByToken(string token);
     }
 }

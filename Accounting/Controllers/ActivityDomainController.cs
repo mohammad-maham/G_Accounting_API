@@ -23,9 +23,9 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> GetProvinceById([FromBody] long provinceId)
+        public IActionResult GetProvinceById([FromBody] long provinceId)
         {
-            Region? region = await _actDom.GetProvinceAsync(provinceId);
+            Region? region = _actDom.GetProvince(provinceId);
             if (region != null && region.Id != 0)
             {
                 string jsonData = JsonConvert.SerializeObject(region);
@@ -36,9 +36,9 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> GetProvinces()
+        public IActionResult GetProvinces()
         {
-            List<Region> regions = await _actDom.GetProvincesAsync();
+            List<Region> regions = _actDom.GetProvinces();
             if (regions != null && regions.Count > 0)
             {
                 string jsonData = JsonConvert.SerializeObject(regions);

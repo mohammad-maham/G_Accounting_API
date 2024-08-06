@@ -2,7 +2,6 @@
 using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Helpers;
 using Accounting.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
@@ -30,7 +29,7 @@ namespace Accounting.Services
             _accounting = accounting;
         }
 
-        public async Task<string> CreateTokenAsync(User user)
+        public string CreateToken(User user)
         {
             string tkn = string.Empty;
             JWTOptions jwtOptions = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings").Get<JWTOptions>()!;
@@ -53,16 +52,16 @@ namespace Accounting.Services
             // Log into sessions for first time
             if (!string.IsNullOrEmpty(tkn))
             {
-                if (!await _accounting!.SessionMgrs.AnyAsync(x => x.Token == tkn))
+                if (!_accounting!.SessionMgrs.Any(x => x.Token == tkn))
                 {
-                    await _accounting.SessionMgrs.AddAsync(new SessionMgr()
+                    _accounting.SessionMgrs.Add(new SessionMgr()
                     {
                         Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_sessionmgr"),
                         Token = tkn,
                         Status = 0,
                         UseDate = DateTime.Now,
                     });
-                    await _accounting.SaveChangesAsync();
+                    _accounting.SaveChanges();
                 }
             }
 
@@ -112,7 +111,7 @@ namespace Accounting.Services
             return new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
         }
 
-        public async Task SendOTPAsync(User user, long otp, string origin = "", bool isSMS = true)
+        public void SendOTP(User user, long otp, string origin = "", bool isSMS = true)
         {
             if (!isSMS)
             {
@@ -150,8 +149,7 @@ namespace Accounting.Services
                 };
 
                 // Send
-                await _smtp!.SendEmailViaGoogleApiAsync(smtpModel);
-                //await _smtp!.SendEmailAsync(smtpModel);
+                _smtp!.SendEmail(smtpModel);
             }
             else
             {
@@ -176,7 +174,7 @@ namespace Accounting.Services
 
                 // Send SMS
                 //await _smtp!.SendAsanakSMSAsync(smsModel);
-                await _smtp!.SendGoldOTPSMSAsync(smsModel);
+                _smtp!.SendGoldOTPSMS(smsModel);
             }
 
             // Log OTP into user
@@ -189,16 +187,16 @@ namespace Accounting.Services
                     OTPSendDateTime = DateTime.Now
                 });
                 user.Otpinfo = otpInfo;
-                await _accounting!.SaveChangesAsync();
+                _accounting!.SaveChanges();
             }
         }
 
-        public async Task<bool> VerifyTokenAsync(string token, bool isLogToSession = true)
+        public bool VerifyToken(string token, bool isLogToSession = true)
         {
-            long count = await _accounting!.SessionMgrs.CountAsync(x => x.Token == token);
+            long count = _accounting!.SessionMgrs.Count(x => x.Token == token);
             if (count > 0)
             {
-                List<SessionMgr> sessions = await _accounting.SessionMgrs.Where(x => x.Token == token).OrderBy(x => x.UseDate).ToListAsync();
+                List<SessionMgr> sessions = _accounting.SessionMgrs.Where(x => x.Token == token).OrderBy(x => x.UseDate).ToList();
                 SessionMgr session = sessions.Last();
                 if (IsTokenExpired(session.UseDate))
                 {
@@ -209,14 +207,14 @@ namespace Accounting.Services
                     if (isLogToSession)
                     {
                         // Insert into sessions log
-                        await _accounting.SessionMgrs.AddAsync(new SessionMgr()
+                        _accounting.SessionMgrs.Add(new SessionMgr()
                         {
                             Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_sessionmgr"),
                             Token = token,
                             Status = 0,
                             UseDate = DateTime.Now
                         });
-                        await _accounting.SaveChangesAsync();
+                        _accounting.SaveChanges();
                     }
                 }
                 return true;
@@ -245,7 +243,7 @@ namespace Accounting.Services
             return otp;
         }
 
-        public bool VerifyOTPAsync(User user, long otp)
+        public bool VerifyOTP(User user, long otp)
         {
             if (!string.IsNullOrEmpty(user.Otpinfo) && otp != 0)
             {

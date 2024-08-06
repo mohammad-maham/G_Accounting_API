@@ -1,6 +1,5 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Accounting.BusinessLogics
 {
@@ -15,14 +14,14 @@ namespace Accounting.BusinessLogics
             _accounting = context;
         }
 
-        public async Task<Region> GetProvinceAsync(long provinceId)
+        public Region GetProvince(long provinceId)
         {
-            return await _accounting.Regions.FirstOrDefaultAsync(x => x.Id == provinceId && x.Status == 1);
+            return _accounting.Regions.FirstOrDefault(x => x.Id == provinceId && x.Status == 1);
         }
 
-        public async Task<List<Region>> GetProvincesAsync()
+        public List<Region> GetProvinces()
         {
-            return await _accounting.Regions.Where(x => x.ParentId == null && x.Status == 1).ToListAsync();
+            return _accounting.Regions.Where(x => x.ParentId == null && x.Status == 1).ToList();
         }
     }
 }

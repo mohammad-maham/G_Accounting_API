@@ -25,58 +25,57 @@ namespace Accounting.BusinessLogics
             _auth = auth;
         }
 
-        public async Task<User?> FindUserAsync(string username)
+        public User? FindUser(string username)
         {
             bool isUsername = !NationalCodeValidator.IsValidNationalCode(username);
 
-            return await _accounting.Users.FirstOrDefaultAsync(x =>
+            return _accounting.Users.FirstOrDefault(x =>
             (x.UserName == username && isUsername) ||
             (x.NationalCode == long.Parse(username) && !isUsername));
         }
 
-        public async Task<User?> FindUserAsync(string username, string password)
+        public User? FindUser(string username, string password)
         {
             User? user = null;
             bool isUsername = !NationalCodeValidator.IsValidNationalCode(username);
             password = SecurePasswordHasher.Hash(password);
-            if (!isUsername)
-                user = await _accounting.Users.FirstOrDefaultAsync(x => x.NationalCode == long.Parse(username) && x.Password == password);
-            else
-                user = await _accounting.Users.FirstOrDefaultAsync(x => x.UserName == username && x.Password == password);
+            user = !isUsername
+                ? _accounting.Users.FirstOrDefault(x => x.NationalCode == long.Parse(username) && x.Password == password)
+                : _accounting.Users.FirstOrDefault(x => x.UserName == username && x.Password == password);
             return user;
         }
 
-        public async Task<User?> FindUserByIdAsync(long userId)
+        public User? FindUserById(long userId)
         {
-            return await _accounting.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            return _accounting.Users.FirstOrDefault(x => x.Id == userId);
         }
 
-        public async Task<Contact?> FindUserContactAsync(long userId)
+        public Contact? FindUserContact(long userId)
         {
-            return await _accounting.Contacts.FirstOrDefaultAsync(x => x.UserId == userId);
+            return _accounting.Contacts.FirstOrDefault(x => x.UserId == userId);
         }
 
-        public async Task<UserInfo?> FindUserInfoAsync(long userId)
+        public UserInfo? FindUserInfo(long userId)
         {
-            return await _accounting.UserInfos.FirstOrDefaultAsync(x => x.UserId == userId);
+            return _accounting.UserInfos.FirstOrDefault(x => x.UserId == userId);
         }
 
         [Obsolete]
-        public async Task<string> GetSigninAsync(string username, string password)
+        public string GetSignin(string username, string password)
         {
             string token = string.Empty;
-            User? user = await FindUserAsync(username, password);
+            User? user = FindUser(username, password);
             if (user != null && user.NationalCode != 0 && user.Status == 1)
             {
-                token = await _auth.CreateTokenAsync(user);
+                token = _auth.CreateToken(user);
             }
             return token;
         }
 
-        public async Task<User?> GetSignupAsync(UserRequest userReq)
+        public User? GetSignup(UserRequest userReq)
         {
             User? user = new();
-            if (userReq != null && !await IsExistUserAsync((long)userReq.NationalCode))
+            if (userReq != null && !IsExistUser(userReq.NationalCode))
             {
                 user.Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_user");
                 user.NationalCode = userReq.NationalCode;
@@ -84,26 +83,26 @@ namespace Accounting.BusinessLogics
                 user.Mobile = userReq.Mobile;
                 user.RegDate = DateTime.Now;
                 user.Status = 0;
-                await _accounting.Users.AddAsync(user);
-                await _accounting.SaveChangesAsync();
-                await InsertUserRoleByDefaultAsync(user.Id);
+                _accounting.Users.Add(user);
+                _accounting.SaveChanges();
+                InsertUserRoleByDefault(user.Id);
             }
             else if (userReq != null && userReq.NationalCode != 0)
             {
-                user = await FindUserAsync(userReq!.NationalCode.ToString());
+                user = FindUser(userReq!.NationalCode.ToString());
             }
             return user;
         }
 
-        public async Task<UserInfo> GetUserInfoByToken(string token)
+        public UserInfo GetUserInfoByToken(string token)
         {
             UserInfo? userInfo = new();
-            var sessions = await _accounting.UserInfos
+            var sessions = _accounting.UserInfos
                 .SelectMany(x =>
                 _accounting.SessionMgrs.Where(y => y.Token == token)
                 .DefaultIfEmpty(),
                 (ui, sm) => new { ui, sm })
-                .ToListAsync();
+                .ToList();
 
             userInfo = sessions
                 .Select(x => x.ui)
@@ -112,11 +111,11 @@ namespace Accounting.BusinessLogics
             return userInfo;
         }
 
-        public async Task<Contact> InsertUserContactsAsync(UserContact userContact)
+        public Contact InsertUserContacts(UserContact userContact)
         {
             Contact? contact = new();
-            User? user = await FindUserByIdAsync(userContact.UserId);
-            Contact? cont = await FindUserContactAsync(userContact.UserId);
+            User? user = FindUserById(userContact.UserId);
+            Contact? cont = FindUserContact(userContact.UserId);
             if (user != null)
             {
                 contact = cont ?? new Contact();
@@ -136,14 +135,14 @@ namespace Accounting.BusinessLogics
                     contact.RegDate = DateTime.Now;
                     if (cont == null)
                     {
-                        await _accounting.Contacts.AddAsync(contact);
+                        _accounting.Contacts.Add(contact);
                     }
                     else
                     {
                         _accounting.Contacts.Update(contact);
                     }
 
-                    await _accounting.SaveChangesAsync();
+                    _accounting.SaveChanges();
                 }
                 catch (Exception e)
                 {
@@ -154,11 +153,11 @@ namespace Accounting.BusinessLogics
             return contact;
         }
 
-        public async Task<UserInfo> InsertUserInfoAsync(UserProfile profile)
+        public UserInfo InsertUserInfo(UserProfile profile)
         {
             UserInfo userInfo = new();
-            User? user = await FindUserByIdAsync(profile.UserId);
-            UserInfo? userinf = await FindUserInfoAsync(profile.UserId);
+            User? user = FindUserById(profile.UserId);
+            UserInfo? userinf = FindUserInfo(profile.UserId);
             if (user != null)
             {
                 userInfo = userinf ?? new UserInfo();
@@ -185,14 +184,14 @@ namespace Accounting.BusinessLogics
                     userInfo.NationalCardImage = profile.NationalCardImage;
                     if (userinf == null)
                     {
-                        await _accounting.UserInfos.AddAsync(userInfo);
+                        _accounting.UserInfos.Add(userInfo);
                     }
                     else
                     {
                         _accounting.UserInfos.Update(userInfo);
                     }
 
-                    await _accounting.SaveChangesAsync();
+                    _accounting.SaveChanges();
                 }
                 catch (Exception e)
                 {
@@ -203,56 +202,58 @@ namespace Accounting.BusinessLogics
             return userInfo;
         }
 
-        public async Task InsertUserRoleByDefaultAsync(long userId)
+        public void InsertUserRoleByDefault(long userId)
         {
-            UserRole userRole = new();
-            userRole.Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_userrole");
-            userRole.RoleId = 21; // By default is "CUSTOMER"
-            userRole.UserId = userId;
-            userRole.RegUserId = userId;
-            userRole.Status = 1;
-            userRole.RegDate = DateTime.Now;
-            await _accounting.UserRoles.AddAsync(userRole);
-            await _accounting.SaveChangesAsync();
+            UserRole userRole = new()
+            {
+                Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_userrole"),
+                RoleId = 21, // By default is "CUSTOMER"
+                UserId = userId,
+                RegUserId = userId,
+                Status = 1,
+                RegDate = DateTime.Now
+            };
+            _accounting.UserRoles.Add(userRole);
+            _accounting.SaveChanges();
 
         }
 
-        public async Task<bool> IsExistUserAsync(long nationalCode)
+        public bool IsExistUser(long nationalCode)
         {
-            return await _accounting.Users.AnyAsync(x => x.NationalCode == nationalCode);
+            return _accounting.Users.Any(x => x.NationalCode == nationalCode);
         }
 
-        public async Task SaveUserSessionInfo(SessionInfo session)
+        public void SaveUserSessionInfo(SessionInfo session)
         {
-            User? user = await FindUserByIdAsync(session.UserId);
+            User? user = FindUserById(session.UserId);
             if (user != null && user.Id == session.UserId)
             {
-                await _accounting.UserSessions.AddAsync(new UserSession()
+                _accounting.UserSessions.Add(new UserSession()
                 {
                     Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_usersession"),
                     UserId = user.Id,
                     SessionDate = DateTime.Now,
                     SessionInfo = session.SessionJsonInfo!
                 });
-                await _accounting.SaveChangesAsync();
+                _accounting.SaveChanges();
             }
         }
 
         [Obsolete]
-        public async Task SetPasswordAsync(string username, string password)
+        public void SetPassword(string username, string password)
         {
-            User? user = await FindUserAsync(username);
+            User? user = FindUser(username);
             if (user != null)
             {
                 string? hashedPassword = SecurePasswordHasher.Hash(password);
                 user.Password = hashedPassword;
-                await _accounting.SaveChangesAsync();
+                _accounting.SaveChanges();
             }
         }
 
-        public async Task UpdateUserAsync(User updatedUser)
+        public void UpdateUser(User updatedUser)
         {
-            User? existUser = await FindUserByIdAsync(updatedUser.Id);
+            User? existUser = FindUserById(updatedUser.Id);
             if (existUser != null && existUser.NationalCode != 0)
             {
                 existUser.NationalCode = isValid(updatedUser.NationalCode) ? updatedUser.NationalCode : existUser.NationalCode;
@@ -264,7 +265,7 @@ namespace Accounting.BusinessLogics
                 existUser.Email = isValid(updatedUser.Email!) ? updatedUser.Email : existUser.Email;
                 existUser.Id = isValid(updatedUser.Id) ? updatedUser.Id : existUser.Id;
                 _accounting.Entry(existUser).State = EntityState.Modified;
-                await _accounting.SaveChangesAsync();
+                _accounting.SaveChanges();
             }
         }
 
@@ -273,14 +274,21 @@ namespace Accounting.BusinessLogics
             if (data != null)
             {
                 if (data is string && !string.IsNullOrWhiteSpace(data))
+                {
                     return true;
-                else if ((data is long || data is short || data is decimal || data is int) && data != 0)
+                }
+                else if (data is (long or short or decimal or int) and not (dynamic)0)
+                {
                     return true;
+                }
                 else if (data is bool)
+                {
                     return true;
-                else if ((data is List<string> || data is List<long> || data is List<int> || data is List<decimal>) && data.Count > 0)
-                    return true;
-                else return false;
+                }
+                else
+                {
+                    return (data is List<string> || data is List<long> || data is List<int> || data is List<decimal>) && data.Count > 0;
+                }
             }
             return false;
         }

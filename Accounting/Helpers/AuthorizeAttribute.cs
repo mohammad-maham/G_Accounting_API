@@ -45,7 +45,7 @@ namespace Accounting.Helpers
             }
             else
             {
-                bool isValidToken = _auth!.VerifyTokenAsync(headerValue.Parameter).Result;
+                bool isValidToken = _auth!.VerifyToken(headerValue.Parameter);
                 if (!isValidToken)
                 {
                     context.Result = new JsonResult(new { message = "Unauthorized!" })

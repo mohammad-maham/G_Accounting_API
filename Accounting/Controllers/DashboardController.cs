@@ -23,14 +23,14 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> GetDashboard(UsersVM user)
+        public IActionResult GetDashboard(UsersVM user)
         {
             if (user != null && user.UserId != null)
             {
-                User? existUser = await _users.FindUserByIdAsync(user.UserId!.Value);
+                User? existUser = _users.FindUserById(user.UserId!.Value);
                 if (existUser != null && existUser.Id != 0)
                 {
-                    DashboardVM? dashboard = await _dashboard.GetUserInfoAsync(existUser.Id);
+                    DashboardVM? dashboard = _dashboard.GetUserInfo(existUser.Id);
                     string jsonData = JsonConvert.SerializeObject(dashboard);
                     return Ok(new ApiResponse(data: jsonData));
                 }

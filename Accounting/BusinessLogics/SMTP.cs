@@ -1,10 +1,6 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
-using Google.Apis.Auth.OAuth2;
 using Google.Apis.Gmail.v1;
-using Google.Apis.Services;
-using Google.Apis.Util.Store;
-using Org.BouncyCastle.Pqc.Crypto.Lms;
 using RestSharp;
 using System.Net;
 using System.Net.Mail;
@@ -16,7 +12,6 @@ namespace Accounting.BusinessLogics
         private readonly ILogger<SMTP>? _logger;
         private readonly IConfiguration _config;
         private static readonly string[] Scopes = { GmailService.Scope.GmailSend, GmailService.Scope.GmailReadonly };
-        private static readonly string ApplicationName = "Gold Marketing OAuth v1";
 
         public SMTP()
         {
@@ -29,7 +24,7 @@ namespace Accounting.BusinessLogics
             _config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
         }
 
-        public async Task SendEmailAsync(SMTPModel smtp)
+        public void SendEmail(SMTPModel smtp)
         {
             try
             {
@@ -53,7 +48,7 @@ namespace Accounting.BusinessLogics
                 mailMessage.Body = smtp.Body;
 
                 // Send email
-                await client.SendMailAsync(mailMessage);
+                client.SendMailAsync(mailMessage);
                 client.Dispose();
             }
             catch (Exception e)
@@ -62,45 +57,7 @@ namespace Accounting.BusinessLogics
             }
         }
 
-        public async Task SendEmailViaGoogleApiAsync(SMTPModel smtp)
-        {
-            try
-            {
-                UserCredential credential;
-                // Load client secrets.
-                FileStream? stream =
-                       new("Content/credentials.json", FileMode.Open, FileAccess.Read);
-
-                string credPath = "token.json";
-                ClientSecrets? secrets = GoogleClientSecrets.FromStream(stream).Secrets;
-                credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true));
-                Console.WriteLine("Credential file saved to: " + credPath);
-
-                // Create Gmail API service.
-                GmailService service = new(new BaseClientService.Initializer
-                {
-                    HttpClientInitializer = credential,
-                    ApplicationName = ApplicationName
-                });
-
-                // Define parameters of request.
-                UsersResource.LabelsResource.ListRequest request = service.Users.Labels.List("me");
-
-                // Send email
-                _ = await request.ExecuteAsync();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
-
-        public async Task SendAsanakSMSAsync(SMSModel sms)
+        public void SendAsanakSMS(SMSModel sms)
         {
             try
             {
@@ -123,7 +80,7 @@ namespace Accounting.BusinessLogics
                 request.AddHeader("cache-control", "no-cache");
 
                 // Send SMS
-                RestResponse response = await client.ExecutePostAsync(request);
+                RestResponse response = client.ExecutePost(request);
             }
             catch (Exception e)
             {
@@ -131,7 +88,7 @@ namespace Accounting.BusinessLogics
             }
         }
 
-        public async Task SendGoldOTPSMSAsync(SMSModel sms)
+        public void SendGoldOTPSMS(SMSModel sms)
         {
             // SMS Configurations
             SMSOptions smsOptions = new ConfigurationBuilder()
@@ -158,7 +115,7 @@ namespace Accounting.BusinessLogics
                 request.AddHeader("cache-control", "no-cache");
 
                 // Send SMS
-                RestResponse response = await client.ExecutePostAsync(request);
+                RestResponse response = client.ExecutePost(request);
             }
             catch (Exception e)
             {

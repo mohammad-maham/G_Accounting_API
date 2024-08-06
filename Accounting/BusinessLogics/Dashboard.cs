@@ -1,6 +1,5 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Accounting.BusinessLogics
 {
@@ -15,14 +14,14 @@ namespace Accounting.BusinessLogics
             _accounting = accounting;
         }
 
-        public async Task<DashboardVM> GetUserInfoAsync(long userId)
+        public DashboardVM GetUserInfo(long userId)
         {
             UserInfo? userInfo = new();
             List<MenusVM>? menus = null;
             DashboardVM dashboard = new();
             if (userId != 0)
             {
-                userInfo = await _accounting.UserInfos.FirstOrDefaultAsync(ui => ui.UserId == userId);
+                userInfo = _accounting.UserInfos.FirstOrDefault(ui => ui.UserId == userId);
 
                 menus = _accounting.Users
                     .SelectMany(usr => _accounting.UserRoles.Where(ur => ur.UserId == usr.Id).DefaultIfEmpty(), (users, userRoles) => new { users, userRoles })

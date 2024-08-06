@@ -24,16 +24,16 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> SignIn([FromBody] UsersVM usersVM)
+        public IActionResult SignIn([FromBody] UsersVM usersVM)
         {
             string token = string.Empty;
             string? username = usersVM.Username ?? usersVM.NationalCode.ToString();
-            if ((!string.IsNullOrEmpty(username) && username != "0") && !string.IsNullOrEmpty(usersVM.Password) && usersVM.Password != "0")
+            if (!string.IsNullOrEmpty(username) && username != "0" && !string.IsNullOrEmpty(usersVM.Password) && usersVM.Password != "0")
             {
-                token = await _users.GetSigninAsync(username!, usersVM.Password);
+                token = _users.GetSignin(username!, usersVM.Password);
                 if (!string.IsNullOrEmpty(token))
                 {
-                    User? user = await _users.FindUserAsync(username!, usersVM.Password);
+                    User? user = _users.FindUser(username!, usersVM.Password);
                     if (user != null)
                     {
                         /*long otp = long.Parse(_auth.GenerateOTP(6));
@@ -51,18 +51,18 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> SignUp([FromBody] UserRequest user)
+        public IActionResult SignUp([FromBody] UserRequest user)
         {
             User? registeredUser = null;
             if (user.NationalCode != 0 && user.Mobile != 0)
             {
-                registeredUser = await _users.GetSignupAsync(user);
+                registeredUser = _users.GetSignup(user);
                 if (registeredUser != null && registeredUser.Id != 0 && new int[] { 0, 11, 12 }.Contains(registeredUser.Status))
                 {
                     registeredUser.Status = 11; // "Waiting Send OTP"
-                    await _users.UpdateUserAsync(registeredUser);
+                    _users.UpdateUser(registeredUser);
                     long otp = long.Parse(_auth.GenerateOTP(6));
-                    await _auth.SendOTPAsync(registeredUser, otp, "Register Verfication", true);
+                    _auth.SendOTP(registeredUser, otp, "Register Verfication", true);
                     string? jsonData = JsonConvert.SerializeObject(new User()
                     {
                         Id = registeredUser.Id,
@@ -72,7 +72,7 @@ namespace Accounting.Controllers
                         UserName = registeredUser.UserName
                     });
                     registeredUser.Status = 12; // "Waiting Confirm OTP"
-                    await _users.UpdateUserAsync(registeredUser);
+                    _users.UpdateUser(registeredUser);
                     return Ok(new ApiResponse(data: jsonData));
                 }
             }
@@ -82,11 +82,11 @@ namespace Accounting.Controllers
         [HttpPost]
         [Authorize]
         [Route("[action]")]
-        public async Task<IActionResult> GetUserInfo([FromBody] User? user)
+        public IActionResult GetUserInfo([FromBody] User? user)
         {
             if (user != null && user.Id != 0)
             {
-                UserInfo? userInfo = await _users.FindUserInfoAsync(user.Id);
+                UserInfo? userInfo = _users.FindUserInfo(user.Id);
                 string jsonData = JsonConvert.SerializeObject(userInfo);
                 return Ok(new ApiResponse(data: jsonData));
             }
@@ -95,15 +95,15 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> ForgotPassword([FromBody] UsersVM usersVM)
+        public IActionResult ForgotPassword([FromBody] UsersVM usersVM)
         {
             if (!string.IsNullOrEmpty(usersVM.Username) && usersVM.Username != "0")
             {
-                User? user = await _users.FindUserAsync(usersVM.Username);
+                User? user = _users.FindUser(usersVM.Username);
                 if (user != null && user.Id != 0)
                 {
                     long otp = long.Parse(_auth.GenerateOTP(6));
-                    await _auth.SendOTPAsync(user, otp, "Forgot Password Verfication", true);
+                    _auth.SendOTP(user, otp, "Forgot Password Verfication", true);
                     return Ok(new ApiResponse());
                 }
             }
@@ -112,18 +112,18 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> VerifyOTP([FromQuery] OTPVerify verify)
+        public IActionResult VerifyOTP([FromQuery] OTPVerify verify)
         {
             if (verify != null && verify.OTP != null && verify.OTP != 0 && !string.IsNullOrEmpty(verify.Username) && verify.Username != "0")
             {
-                User? user = await _users.FindUserAsync(verify.Username);
+                User? user = _users.FindUser(verify.Username);
                 if (user != null)
                 {
-                    bool isValid = _auth.VerifyOTPAsync(user, verify.OTP.Value);
+                    bool isValid = _auth.VerifyOTP(user, verify.OTP.Value);
                     if (isValid)
                     {
                         user.Status = 1; // "ACTIVE"
-                        await _users.UpdateUserAsync(user);
+                        _users.UpdateUser(user);
                         return Ok(new ApiResponse());
                     }
                     else
@@ -137,21 +137,21 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> SetPassword([FromBody] NewPassword newPassword)
+        public IActionResult SetPassword([FromBody] NewPassword newPassword)
         {
             if (newPassword.NationalCode != 0 && !string.IsNullOrEmpty(newPassword.Password))
             {
-                User? user = await _users.FindUserAsync(newPassword.NationalCode.ToString());
+                User? user = _users.FindUser(newPassword.NationalCode.ToString());
                 if (user != null)
                 {
                     user.Status = 13; // "Waiting Submit Password"
-                    await _users.UpdateUserAsync(user);
-                    bool isValid = _auth.VerifyOTPAsync(user, newPassword.OTP);
+                    _users.UpdateUser(user);
+                    bool isValid = _auth.VerifyOTP(user, newPassword.OTP);
                     if (isValid)
                     {
-                        await _users.SetPasswordAsync(newPassword.NationalCode.ToString(), newPassword.Password);
+                        _users.SetPassword(newPassword.NationalCode.ToString(), newPassword.Password);
                         user.Status = 1; // "ACTIVATE"
-                        await _users.UpdateUserAsync(user);
+                        _users.UpdateUser(user);
                         return Ok(new ApiResponse());
                     }
                     else
@@ -166,11 +166,11 @@ namespace Accounting.Controllers
         [HttpPost]
         [Authorize]
         [Route("[action]")]
-        public async Task<IActionResult> UpdateUser([FromBody] User user)
+        public IActionResult UpdateUser([FromBody] User user)
         {
             if (user != null && user.Id != 0)
             {
-                await _users.UpdateUserAsync(user);
+                _users.UpdateUser(user);
                 return Ok(new ApiResponse());
             }
             return BadRequest(new ApiResponse(500));
@@ -179,11 +179,11 @@ namespace Accounting.Controllers
         [HttpPost]
         [Authorize]
         [Route("[action]")]
-        public async Task<IActionResult> CompleteProfile([FromBody] UserProfile profile)
+        public IActionResult CompleteProfile([FromBody] UserProfile profile)
         {
             if (profile != null)
             {
-                UserInfo userInfo = await _users.InsertUserInfoAsync(profile);
+                UserInfo userInfo = _users.InsertUserInfo(profile);
                 string? jsonData = JsonConvert.SerializeObject(userInfo);
                 return Ok(new ApiResponse(data: jsonData));
             }
@@ -194,11 +194,11 @@ namespace Accounting.Controllers
         [Authorize]
         //[UserInfo]
         [Route("[action]")]
-        public async Task<IActionResult> SubmitContact([FromBody] UserContact userContact)
+        public IActionResult SubmitContact([FromBody] UserContact userContact)
         {
             if (userContact != null)
             {
-                Contact contact = await _users.InsertUserContactsAsync(userContact);
+                Contact contact = _users.InsertUserContacts(userContact);
                 string? jsonData = JsonConvert.SerializeObject(contact);
                 return Ok(new ApiResponse(data: jsonData));
             }
@@ -207,17 +207,17 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> SendOTP([FromBody] UsersVM usersVM)
+        public IActionResult SendOTP([FromBody] UsersVM usersVM)
         {
             if (usersVM.UserId != 0)
             {
                 long otp = long.Parse(_auth.GenerateOTP(6));
-                User? user = await _users.FindUserByIdAsync(usersVM.UserId!.Value);
+                User? user = _users.FindUserById(usersVM.UserId!.Value);
                 if (user != null)
                 {
-                    await _auth.SendOTPAsync(user, otp, "Verfication Code", true);
+                    _auth.SendOTP(user, otp, "Verfication Code", true);
                     user.Status = 12; // "Waiting Confirm OTP"
-                    await _users.UpdateUserAsync(user);
+                    _users.UpdateUser(user);
                     return Ok(new ApiResponse());
                 }
             }
@@ -227,11 +227,11 @@ namespace Accounting.Controllers
         [HttpPost]
         [Authorize]
         [Route("[action]")]
-        public async Task<IActionResult> SaveSessionInfo([FromBody] SessionInfo session)
+        public IActionResult SaveSessionInfo([FromBody] SessionInfo session)
         {
             if (session != null && session.UserId != 0)
             {
-                await _users.SaveUserSessionInfo(session);
+                _users.SaveUserSessionInfo(session);
                 return Ok(new ApiResponse());
             }
             return BadRequest(new ApiResponse(500));
@@ -240,15 +240,15 @@ namespace Accounting.Controllers
         [HttpPost]
         [Authorize]
         [Route("[action]")]
-        public async Task<IActionResult> UpdateUserStatus([FromBody] UsersVM usersVM)
+        public IActionResult UpdateUserStatus([FromBody] UsersVM usersVM)
         {
             if (usersVM.UserId is not null and not 0)
             {
-                User? user = await _users.FindUserByIdAsync(usersVM.UserId!.Value);
+                User? user = _users.FindUserById(usersVM.UserId!.Value);
                 if (user != null && user.Id != 0)
                 {
                     user.Status = usersVM.Status!.Value;
-                    await _users.UpdateUserAsync(user);
+                    _users.UpdateUser(user);
                     return Ok(new ApiResponse());
                 }
             }

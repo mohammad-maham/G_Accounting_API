@@ -4,6 +4,6 @@ namespace Accounting.BusinessLogics.IBusinessLogics
 {
     public interface IDashboard
     {
-        Task<DashboardVM> GetUserInfoAsync(long userId);
+        DashboardVM GetUserInfo(long userId);
     }
 }
