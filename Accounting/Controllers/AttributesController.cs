@@ -42,10 +42,12 @@ namespace Accounting.Controllers
         public IActionResult GetUserInfo([FromBody] AttributesVM attributes)
         {
             long userId = TokenDecryptor.GetUserIdByToken(attributes.Token!);
-            UserInfo? userInfo = _users!.FindUserInfo(userId);
-            if (userInfo != null && userInfo.Id != 0)
+            //UserInfo? userInfo = _users!.FindUserInfo(userId);
+            //FullUserInfoVM? userInfo = _users!.GetFindFullUserInfo(userId);
+            User? user = _users.FindUserById(userId);
+            if (user != null && user.Id != 0)
             {
-                string jsonData = JsonConvert.SerializeObject(userInfo);
+                string jsonData = JsonConvert.SerializeObject(user);
                 return Ok(new ApiResponse(data: jsonData));
             }
             return BadRequest(new ApiResponse(404));
