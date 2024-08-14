@@ -13,6 +13,8 @@
         public int ActionId { get; set; }
         public string? ActionName { get; set; }
         public string? ActionPath { get; set; }
-        public int? OwnerMenuId { get; set; }
+        public string? ActionTitle { get; set; }
+        public int? ParentMenuId { get; set; }
+        public string? ActionIcon { get; set; }
     }
 }
