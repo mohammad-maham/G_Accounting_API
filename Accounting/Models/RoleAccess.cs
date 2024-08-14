@@ -14,4 +14,5 @@ public partial class RoleAccess
     public short Status { get; set; }
 
     public short ActionId { get; set; }
+    public int? OwnerMenuId { get; set; }
 }
