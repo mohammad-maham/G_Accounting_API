@@ -44,6 +44,8 @@ namespace Accounting.BusinessLogics
 
                 if (parentMenus != null && parentMenus.Count > 0)
                 {
+                    parentMenus = parentMenus.DistinctBy(x => x.MenuId).ToList();
+
                     subMenus = _accounting.Menus
                         .SelectMany(mu => _accounting.RoleAccesses.Where(ra => mu.Id == ra.OwnerMenuId), (mu, roleAccess) => new { mu, roleAccess })
                         .SelectMany(ra => _accounting.Actions.Where(a => a.Id == ra.roleAccess!.ActionId), (ra, ac) => new { ra, ac })
