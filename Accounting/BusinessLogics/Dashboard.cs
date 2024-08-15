@@ -1,5 +1,6 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
+using System.Security.Cryptography;
 
 namespace Accounting.BusinessLogics
 {
@@ -17,26 +18,49 @@ namespace Accounting.BusinessLogics
         public DashboardVM GetUserInfo(long userId)
         {
             UserInfo? userInfo = new();
-            List<MenusVM>? menus = null;
+            List<MenusVM>? parentMenus = null;
+            List<SubMenusVM>? subMenus = null;
             DashboardVM dashboard = new();
             if (userId != 0)
             {
                 userInfo = _accounting.UserInfos.FirstOrDefault(ui => ui.UserId == userId);
 
-                menus = _accounting.Users
+                parentMenus = _accounting.Users
                     .SelectMany(usr => _accounting.UserRoles.Where(ur => ur.UserId == usr.Id).DefaultIfEmpty(), (users, userRoles) => new { users, userRoles })
                     .SelectMany(ur => _accounting.Roles.Where(r => r.Id == ur.userRoles!.RoleId).DefaultIfEmpty(), (ur, roles) => new { ur, roles })
                     .SelectMany(ro => _accounting.RoleAccesses.Where(ra => ra.RoleId == ro.roles!.Id).DefaultIfEmpty(), (ro, roleAccess) => new { ro, roleAccess })
-                    .SelectMany(roa => _accounting.Menus.Where(m => m.Id == roa.roleAccess!.MenuId), (roa, menu) => new { roa, menu })
-                    .SelectMany(ra => _accounting.Actions.Where(a => a.Id == ra.roa.roleAccess!.ActionId), (ra, ac) => new { ra, ac })
-                    .Where(w => w.ac.Status == 1 && w.ra.roa.ro.ur.users.Id == userId)
-                    .Select(x => new MenusVM()
-                    {
-                        ActionName = x.ac.Name,
-                        ActionPath = x.ac.Path,
-                        MenuName = x.ra.menu.Name,
-                        MenuTitle = x.ra.menu.Title
-                    }).ToList();
+                    .SelectMany(roa => _accounting.Menus.Where(m => m.Id == roa.roleAccess!.MenuId && m.ParentId != 0), (roa, menu) => new { roa, menu })
+                    .SelectMany(roaa => _accounting.Menus.Where(m => m.Id == roaa.menu.ParentId && m.ParentId == 0), (roaa, menu) => new { roaa, menu })
+                     .Where(w => w.roaa.roa.ro.ur.users.Id == userId)
+                     .Select(x => new MenusVM()
+                     {
+                         MenuId = x.menu.Id,
+                         MenuIcon = x.menu.Icon,
+                         MenuName = x.menu.Name,
+                         MenuTitle = x.menu.Title
+                     })
+                     .ToList();
+
+                if (parentMenus != null && parentMenus.Count > 0)
+                {
+                    parentMenus = parentMenus.DistinctBy(x => x.MenuId).ToList();
+
+                    subMenus = _accounting.Menus
+                        .SelectMany(mu => _accounting.RoleAccesses.Where(ra => mu.Id == ra.MenuId && mu.ParentId != 0), (mu, roleAccess) => new { mu, roleAccess })
+                        .SelectMany(ra => _accounting.Actions.Where(a => a.Id == ra.roleAccess!.ActionId), (ra, ac) => new { ra, ac })
+                        .Where(w => w.ac.Status == 1)
+                        .Select(x => new SubMenusVM()
+                        {
+                            ActionId = x.ac.Id,
+                            ActionName = x.ac.Name,
+                            ActionPath = x.ac.Path,
+                            ActionTitle = x.ra.mu.Title,
+                            ParentMenuId = x.ra.mu.ParentId,
+                            ActionIcon = x.ra.mu.Icon
+                        }).ToList();
+
+                    subMenus = subMenus.Where(x => parentMenus.Any(y => y.MenuId == x.ParentMenuId)).ToList();
+                }
 
                 UserRoleVM? roles = _accounting.Users
                     .SelectMany(usr => _accounting.UserRoles.Where(ur => ur.UserId == usr.Id), (usr, ur) => new { usr, ur })
@@ -45,7 +69,8 @@ namespace Accounting.BusinessLogics
                     .Select(x => new UserRoleVM() { Name = x.r.Name, Title = x.r.Description }).FirstOrDefault();
 
                 dashboard.UserInfo = userInfo;
-                dashboard.Menus = menus;
+                dashboard.ParentMenus = parentMenus;
+                dashboard.SubMenus = subMenus;
                 dashboard.UserRole = roles;
             }
             return dashboard;

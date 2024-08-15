@@ -14,4 +14,6 @@ public partial class Menu
     public string? Title { get; set; }
 
     public short Status { get; set; }
+
+    public string? Icon { get; set; }
 }

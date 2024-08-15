@@ -4,6 +4,7 @@ using Accounting.Models;
 using Accounting.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 namespace Accounting.BusinessLogics
 {
     public class Users : IUsers
@@ -58,6 +59,23 @@ namespace Accounting.BusinessLogics
         public UserInfo? FindUserInfo(long userId)
         {
             return _accounting.UserInfos.FirstOrDefault(x => x.UserId == userId);
+        }
+
+        public FullUserInfoVM GetFindFullUserInfo(long userId)
+        {
+            FullUserInfoVM? userInfo = new();
+            var userInfos = _accounting.Users
+                .SelectMany(x =>
+                _accounting.UserInfos.Where(y => y.UserId == userId)
+                .DefaultIfEmpty(),
+                (u, ui) => new { u, ui })
+                .ToList();
+
+            userInfo = userInfos
+                .Select(x => new FullUserInfoVM() { User = x.u, UserInfo = x.ui })
+                .FirstOrDefault();
+
+            return userInfo;
         }
 
         [Obsolete]

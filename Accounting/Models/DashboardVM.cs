@@ -2,7 +2,8 @@
 {
     public class DashboardVM
     {
-        public List<MenusVM>? Menus { get; set; }
+        public List<MenusVM>? ParentMenus { get; set; }
+        public List<SubMenusVM>? SubMenus { get; set; }
         public UserInfo? UserInfo { get; set; }
         public UserRoleVM? UserRole { get; set; }
     }
