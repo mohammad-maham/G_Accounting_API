@@ -6,6 +6,7 @@
         public string? MenuName { get; set; }
         public string? MenuTitle { get; set; }
         public string? MenuIcon { get; set; }
+        public long RoleId { get; set; }
     }
 
     public class SubMenusVM
@@ -16,5 +17,6 @@
         public string? ActionTitle { get; set; }
         public int? ParentMenuId { get; set; }
         public string? ActionIcon { get; set; }
+        public long RoleId { get; set; }
     }
 }

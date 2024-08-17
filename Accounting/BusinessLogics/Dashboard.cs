@@ -37,7 +37,8 @@ namespace Accounting.BusinessLogics
                          MenuId = x.menu.Id,
                          MenuIcon = x.menu.Icon,
                          MenuName = x.menu.Name,
-                         MenuTitle = x.menu.Title
+                         MenuTitle = x.menu.Title,
+                         RoleId = x.roaa.roa.roleAccess!.RoleId
                      })
                      .ToList();
 
@@ -56,17 +57,23 @@ namespace Accounting.BusinessLogics
                             ActionPath = x.ac.Path,
                             ActionTitle = x.ra.mu.Title,
                             ParentMenuId = x.ra.mu.ParentId,
-                            ActionIcon = x.ra.mu.Icon
+                            ActionIcon = x.ra.mu.Icon,
+                            RoleId = x.ra.roleAccess.RoleId,
                         }).ToList();
 
-                    subMenus = subMenus.Where(x => parentMenus.Any(y => y.MenuId == x.ParentMenuId)).ToList();
+                    subMenus = subMenus.Where(x => parentMenus.Any(y => y.MenuId == x.ParentMenuId && y.RoleId == x.RoleId)).ToList();
                 }
 
                 UserRoleVM? roles = _accounting.Users
                     .SelectMany(usr => _accounting.UserRoles.Where(ur => ur.UserId == usr.Id), (usr, ur) => new { usr, ur })
                     .SelectMany(urs => _accounting.Roles.Where(r => r.Id == urs.ur.RoleId), (urs, r) => new { urs, r })
                     .Where(w => w.urs.usr.Id == userId)
-                    .Select(x => new UserRoleVM() { Name = x.r.Name, Title = x.r.Description }).FirstOrDefault();
+                    .Select(x => new UserRoleVM()
+                    {
+                        Id = x.r.Id,
+                        Name = x.r.Name,
+                        Title = x.r.Description
+                    }).FirstOrDefault();
 
                 dashboard.UserInfo = userInfo;
                 dashboard.ParentMenus = parentMenus;
