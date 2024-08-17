@@ -254,5 +254,19 @@ namespace Accounting.Controllers
             }
             return BadRequest(new ApiResponse(500));
         }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult GetUsers()
+        {
+            List<GetUsersVM> users = new List<GetUsersVM>();
+            users = _users.GetUsersList();
+            if (users != null && users.Count > 0)
+            {
+                string jsonData = JsonConvert.SerializeObject(users);
+                return Ok(new ApiResponse(data: jsonData));
+            }
+            return BadRequest(new ApiResponse(404));
+        }
     }
 }

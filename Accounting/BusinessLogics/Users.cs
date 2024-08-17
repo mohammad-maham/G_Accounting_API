@@ -129,6 +129,18 @@ namespace Accounting.BusinessLogics
             return userInfo;
         }
 
+        public List<GetUsersVM> GetUsersList()
+        {
+            List<GetUsersVM> users = new List<GetUsersVM>();
+
+            users = _accounting.UserInfos
+            .Where(x => x.Status == 1)
+            .Select(x => new GetUsersVM() { UserId = x.UserId, Username = $"{x.FirstName} {x.LastName}" })
+            .ToList();
+
+            return users;
+        }
+
         public Contact InsertUserContacts(UserContact userContact)
         {
             Contact? contact = new();
@@ -299,13 +311,10 @@ namespace Accounting.BusinessLogics
                 {
                     return true;
                 }
-                else if (data is bool)
-                {
-                    return true;
-                }
                 else
                 {
-                    return (data is List<string> || data is List<long> || data is List<int> || data is List<decimal>) && data.Count > 0;
+                    return data is bool
+|| (bool)((data is List<string> || data is List<long> || data is List<int> || data is List<decimal>) && data.Count > 0);
                 }
             }
             return false;

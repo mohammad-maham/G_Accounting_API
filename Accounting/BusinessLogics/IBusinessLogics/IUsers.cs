@@ -20,5 +20,6 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         void InsertUserRoleByDefault(long userId);
         UserInfo GetUserInfoByToken(string token);
         FullUserInfoVM GetFindFullUserInfo(long userId);
+        List<GetUsersVM> GetUsersList();
     }
 }
