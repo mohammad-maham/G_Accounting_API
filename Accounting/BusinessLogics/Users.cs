@@ -134,9 +134,12 @@ namespace Accounting.BusinessLogics
             List<GetUsersVM> users = new List<GetUsersVM>();
 
             users = _accounting.UserInfos
-            .Where(x => x.Status == 1)
-            .Select(x => new GetUsersVM() { UserId = x.UserId, Username = $"{x.FirstName} {x.LastName}" })
+                .SelectMany(ui => _accounting.UserRoles.Where(x => x.UserId == ui.UserId), (ui, ur) => new { ui, ur })
+            .Where(x => x.ui.Status == 1 && new[] { 11, 12 }.Contains(x.ur.RoleId))
+            .Select(x => new GetUsersVM() { UserId = x.ui.UserId, Username = $"{x.ui.FirstName} {x.ui.LastName}" })
             .ToList();
+
+            users.Add(new GetUsersVM() { UserId = -10, Username = "کیف پول" });
 
             return users;
         }
