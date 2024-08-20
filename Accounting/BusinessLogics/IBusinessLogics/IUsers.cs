@@ -12,6 +12,7 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         void SetPassword(string username, string password);
         UserInfo InsertUserInfo(UserProfile profile);
         UserInfo? FindUserInfo(long userId);
+        UserInfoVM? FindFullUserInfo(long userId);
         Contact InsertUserContacts(UserContact userContact);
         Contact? FindUserContact(long userId);
         User? FindUserById(long userId);

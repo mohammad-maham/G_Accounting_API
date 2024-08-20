@@ -86,7 +86,7 @@ namespace Accounting.Controllers
         {
             if (user != null && user.Id != 0)
             {
-                UserInfo? userInfo = _users.FindUserInfo(user.Id);
+                UserInfoVM? userInfo = _users.FindFullUserInfo(user.Id);
                 string jsonData = JsonConvert.SerializeObject(userInfo);
                 return Ok(new ApiResponse(data: jsonData));
             }
