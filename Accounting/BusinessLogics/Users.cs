@@ -83,7 +83,7 @@ namespace Accounting.BusinessLogics
         {
             string token = string.Empty;
             User? user = FindUser(username, password);
-            if (user != null && user.NationalCode != 0 && user.Status == 1)
+            if (user != null && user.NationalCode != 0 && user.Status >= 1)
             {
                 token = _auth.CreateToken(user);
             }
