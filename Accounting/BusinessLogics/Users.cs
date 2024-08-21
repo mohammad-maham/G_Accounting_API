@@ -4,7 +4,6 @@ using Accounting.Models;
 using Accounting.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 namespace Accounting.BusinessLogics
 {
     public class Users : IUsers
@@ -55,10 +54,35 @@ namespace Accounting.BusinessLogics
         {
             return _accounting.Contacts.FirstOrDefault(x => x.UserId == userId);
         }
-
         public UserInfo? FindUserInfo(long userId)
         {
             return _accounting.UserInfos.FirstOrDefault(x => x.UserId == userId);
+        }
+
+        public UserInfoVM? FindFullUserInfo(long userId)
+        {
+            UserInfoVM? userInfo = new();
+            userInfo = _accounting.UserInfos.SelectMany(usr => _accounting.UserRoles.Where(ur => ur.UserId == usr.UserId), (usr, ur) => new { usr, ur })
+                   .SelectMany(urs => _accounting.Roles.Where(r => r.Id == urs.ur.RoleId), (urs, r) => new { urs, r })
+                   .Where(w => w.urs.usr.UserId == userId)
+                   .Select(x => new UserInfoVM()
+                   {
+                       Id = x.urs.usr.Id,
+                       UserId = x.urs.usr.UserId,
+                       BirthDay = x.urs.usr.BirthDay,
+                       FatherName = x.urs.usr.FatherName,
+                       FirstName = x.urs.usr.FirstName,
+                       LastName = x.urs.usr.LastName,
+                       Gender = x.urs.usr.Gender,
+                       NationalCardImage = x.urs.usr.NationalCardImage,
+                       RegDate = x.urs.usr.RegDate,
+                       SedadInfo = x.urs.usr.SedadInfo,
+                       Status = x.urs.usr.Status,
+                       UserRoleId = x.r.Id,
+                       UserRole = x.r.Description
+                   })
+                   .FirstOrDefault();
+            return userInfo;
         }
 
         public FullUserInfoVM GetFindFullUserInfo(long userId)
@@ -134,9 +158,12 @@ namespace Accounting.BusinessLogics
             List<GetUsersVM> users = new List<GetUsersVM>();
 
             users = _accounting.UserInfos
-            .Where(x => x.Status == 1)
-            .Select(x => new GetUsersVM() { UserId = x.UserId, Username = $"{x.FirstName} {x.LastName}" })
+                .SelectMany(ui => _accounting.UserRoles.Where(x => x.UserId == ui.UserId), (ui, ur) => new { ui, ur })
+            .Where(x => x.ui.Status == 1 && new[] { 11, 12 }.Contains(x.ur.RoleId))
+            .Select(x => new GetUsersVM() { UserId = x.ui.UserId, Username = $"{x.ui.FirstName} {x.ui.LastName}" })
             .ToList();
+
+            users.Add(new GetUsersVM() { UserId = -10, Username = "کیف پول" });
 
             return users;
         }
