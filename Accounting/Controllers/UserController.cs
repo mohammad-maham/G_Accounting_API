@@ -268,5 +268,19 @@ namespace Accounting.Controllers
             }
             return BadRequest(new ApiResponse(404));
         }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult GetRoles()
+        {
+            List<Role> roles = new List<Role>();
+            roles = _users.GetRolesList();
+            if (roles != null && roles.Count > 0)
+            {
+                string jsonData = JsonConvert.SerializeObject(roles);
+                return Ok(new ApiResponse(data: jsonData));
+            }
+            return BadRequest(new ApiResponse(404));
+        }
     }
 }

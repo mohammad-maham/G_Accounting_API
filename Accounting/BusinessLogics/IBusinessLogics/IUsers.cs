@@ -22,5 +22,8 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         UserInfo GetUserInfoByToken(string token);
         FullUserInfoVM GetFindFullUserInfo(long userId);
         List<GetUsersVM> GetUsersList();
+        List<UsersList> GetUsersListByFilter(UsersList users);
+        string ConvertGregDateTimeToPersianString(DateTime? date, bool onlyDate = false);
+        List<Role> GetRolesList();
     }
 }

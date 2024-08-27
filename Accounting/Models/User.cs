@@ -12,7 +12,7 @@ public partial class User
 
     public DateTime RegDate { get; set; }
 
-    public short Status { get; set; }
+    public int Status { get; set; }
 
     public string? Email { get; set; }
 

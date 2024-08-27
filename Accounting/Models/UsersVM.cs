@@ -18,4 +18,23 @@
         public long? UserId { get; set; }
         public string? Username { get; set; }
     }
+
+    public class UsersList
+    {
+        public long? UserId { get; set; }
+        public string? Username { get; set; }
+        public string? Firstname { get; set; }
+        public string? Lastname { get; set; }
+        public string? Role { get; set; }
+        public long? RoleId { get; set; }
+        public string? Status { get; set; }
+        public int? StatusId { get; set; }
+        public string? RegDate { get; set; }
+        public long? Mobile { get; set; }
+        public long? NationalCode { get; set; }
+        public string? Fathername { get; set; }
+        public string? Birthday { get; set; }
+        public DateTime? FromRegDate { get; set; }
+        public DateTime? ToRegDate { get; set; }
+    }
 }

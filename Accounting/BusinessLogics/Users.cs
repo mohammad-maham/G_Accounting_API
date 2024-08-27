@@ -4,6 +4,7 @@ using Accounting.Models;
 using Accounting.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Globalization;
 namespace Accounting.BusinessLogics
 {
     public class Users : IUsers
@@ -345,6 +346,66 @@ namespace Accounting.BusinessLogics
                 }
             }
             return false;
+        }
+
+        public List<UsersList> GetUsersListByFilter(UsersList users)
+        {
+            List<UsersList> usersLists = new List<UsersList>();
+
+            var lstUsers = _accounting.Users
+                .SelectMany(usr => _accounting.UserRoles.Where(userRoles => userRoles.UserId == usr.Id), (usr, userRoles) => new { usr, userRoles })
+                .SelectMany(userInfRoles => _accounting.Roles.Where(roles => roles.Id == userInfRoles.userRoles.RoleId), (userInfRoles, roles) => new { userInfRoles, roles })
+                .SelectMany(userInfRoleUsers => _accounting.UserInfos.Where(usrInfo => usrInfo.UserId == userInfRoleUsers.userInfRoles.usr.Id).DefaultIfEmpty(), (userInfRoleUsers, usrInfo) => new { userInfRoleUsers, usrInfo })
+                .SelectMany(userInfo => _accounting.Statuses.Where(status => status.Id == userInfo.userInfRoleUsers.userInfRoles.usr.Status).DefaultIfEmpty(), (userInfo, status) => new { userInfo, status });
+
+            if (users.FromRegDate != null)
+            {
+                lstUsers = lstUsers.Where(x => x.userInfo.userInfRoleUsers.userInfRoles.usr.RegDate >= users.FromRegDate);
+            }
+            if (users.ToRegDate != null)
+            {
+                lstUsers = lstUsers.Where(x => x.userInfo.userInfRoleUsers.userInfRoles.usr.RegDate <= users.ToRegDate);
+            }
+            if (users.RoleId != null && users.RoleId != 0)
+            {
+                lstUsers = lstUsers.Where(x => x.userInfo.userInfRoleUsers.roles.Id == users.RoleId);
+            }
+
+            IEnumerable<UsersList> usr = lstUsers.ToList().Select(x => new UsersList()
+            {
+                UserId = x.userInfo.userInfRoleUsers.userInfRoles.usr.Id,
+                Username = x.userInfo.userInfRoleUsers.userInfRoles.usr.UserName,
+                StatusId = x.userInfo.userInfRoleUsers.userInfRoles.usr.Status,
+                Status = x.status?.Caption,
+                Birthday = ConvertGregDateTimeToPersianString(x.userInfo.usrInfo != null && x.userInfo.usrInfo!.BirthDay.HasValue ? x.userInfo.usrInfo!.BirthDay!.Value.ToDateTime(TimeOnly.MinValue) : null, true),
+                Fathername = x.userInfo.usrInfo?.FatherName ?? "",
+                Firstname = x.userInfo.usrInfo?.FirstName ?? "",
+                Lastname = x.userInfo.usrInfo?.LastName ?? "",
+                Mobile = x.userInfo.userInfRoleUsers.userInfRoles.usr.Mobile,
+                NationalCode = x.userInfo.userInfRoleUsers.userInfRoles.usr.NationalCode,
+                RegDate = ConvertGregDateTimeToPersianString(x.userInfo.userInfRoleUsers.userInfRoles.usr.RegDate, false),
+                RoleId = x.userInfo.userInfRoleUsers.userInfRoles.userRoles.RoleId,
+                Role = x.userInfo.userInfRoleUsers.roles.Description,
+            });
+
+            usersLists = usr.ToList();
+
+            return usersLists;
+        }
+
+        public string ConvertGregDateTimeToPersianString(DateTime? date, bool onlyDate = false)
+        {
+            string data = string.Empty;
+            if (date != null)
+            {
+                data = date.Value.ToString(onlyDate ? "yyyy/MM/dd" : "yyyy/MM/dd HH:mm:ss", new CultureInfo("fa-IR"));
+            }
+            return data;
+        }
+
+        public List<Role> GetRolesList()
+        {
+            return _accounting.Roles.Where(x => x.Status == 1).ToList();
         }
     }
 }
