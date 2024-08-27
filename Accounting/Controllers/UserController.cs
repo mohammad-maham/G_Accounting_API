@@ -303,9 +303,9 @@ namespace Accounting.Controllers
         [HttpPost]
         [Authorize]
         [Route("[action]")]
-        public IActionResult ChangeUserRole(UserRole userRole)
+        public IActionResult ChangeUserRole(UsersRoleVM userRole)
         {
-            if (userRole != null && userRole.UserId != 0)
+            if (userRole != null && userRole.UserId != null && userRole.UserId != 0 && userRole.RoleId != null && userRole.UserId != 0)
             {
                 _users.ChangeUserRole(userRole);
                 return Ok(new ApiResponse());

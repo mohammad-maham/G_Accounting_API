@@ -26,6 +26,6 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         string ConvertGregDateTimeToPersianString(DateTime? date, bool onlyDate = false);
         List<Role> GetRolesList();
         List<Status> GetStatusesList();
-        void ChangeUserRole(UserRole userRole);
+        void ChangeUserRole(UsersRoleVM userRole);
     }
 }

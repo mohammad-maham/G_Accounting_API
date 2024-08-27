@@ -403,12 +403,12 @@ namespace Accounting.BusinessLogics
             return _accounting.Statuses.ToList();
         }
 
-        public void ChangeUserRole(UserRole userRole)
+        public void ChangeUserRole(UsersRoleVM userRole)
         {
             UserRole role = _accounting.UserRoles.Where(x => x.UserId == userRole.UserId).FirstOrDefault() ?? new UserRole();
             if (role != null && role.Id != 0)
             {
-                role.RoleId = userRole.RoleId;
+                role.RoleId = userRole.RoleId!.Value;
                 _accounting.UserRoles.Update(role);
                 _accounting.SaveChanges();
             }
