@@ -156,7 +156,7 @@ namespace Accounting.BusinessLogics
 
         public List<GetUsersVM> GetUsersList()
         {
-            List<GetUsersVM> users = new List<GetUsersVM>();
+            List<GetUsersVM> users = [];
 
             users = _accounting.UserInfos
                 .SelectMany(ui => _accounting.UserRoles.Where(x => x.UserId == ui.UserId), (ui, ur) => new { ui, ur })
@@ -329,28 +329,18 @@ namespace Accounting.BusinessLogics
 
         private bool isValid(dynamic data)
         {
-            if (data != null)
-            {
-                if (data is string && !string.IsNullOrWhiteSpace(data))
-                {
-                    return true;
-                }
-                else if (data is (long or short or decimal or int) and not (dynamic)0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return data is bool
-|| (bool)((data is List<string> || data is List<long> || data is List<int> || data is List<decimal>) && data.Count > 0);
-                }
-            }
-            return false;
+            return data != null
+                ? data is string && !string.IsNullOrWhiteSpace(data)
+                    ? true
+                    : data is (long or short or decimal or int) and not (dynamic)0
+|| data is bool
+                    || (bool)((data is List<string> || data is List<long> || data is List<int> || data is List<decimal>) && data.Count > 0)
+                : false;
         }
 
         public List<UsersList> GetUsersListByFilter(UsersList users)
         {
-            List<UsersList> usersLists = new List<UsersList>();
+            List<UsersList> usersLists = [];
 
             var lstUsers = _accounting.Users
                 .SelectMany(usr => _accounting.UserRoles.Where(userRoles => userRoles.UserId == usr.Id), (usr, userRoles) => new { usr, userRoles })
@@ -366,7 +356,7 @@ namespace Accounting.BusinessLogics
             {
                 lstUsers = lstUsers.Where(x => x.userInfo.userInfRoleUsers.userInfRoles.usr.RegDate <= users.ToRegDate);
             }
-            if (users.RoleId != null && users.RoleId != 0)
+            if (users.RoleId is not null and not 0)
             {
                 lstUsers = lstUsers.Where(x => x.userInfo.userInfRoleUsers.roles.Id == users.RoleId);
             }
@@ -407,6 +397,20 @@ namespace Accounting.BusinessLogics
         {
             return _accounting.Roles.Where(x => x.Status == 1).ToList();
         }
+
+        public List<Status> GetStatusesList()
+        {
+            return _accounting.Statuses.ToList();
+        }
+
+        public void ChangeUserRole(UserRole userRole)
+        {
+            List<UserRole> roles = _accounting.UserRoles.Where(x => x.UserId == userRole.UserId).ToList();
+            if (roles != null && roles.Count > 0)
+            {
+                foreach (UserRole role in roles)
+                    role.RoleId = userRole.RoleId;
+            }
+        }
     }
 }
-

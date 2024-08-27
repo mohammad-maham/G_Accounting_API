@@ -256,10 +256,11 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [Route("[action]")]
         public IActionResult GetUsers()
         {
-            List<GetUsersVM> users = new List<GetUsersVM>();
+            List<GetUsersVM> users = [];
             users = _users.GetUsersList();
             if (users != null && users.Count > 0)
             {
@@ -270,15 +271,44 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [Route("[action]")]
         public IActionResult GetRoles()
         {
-            List<Role> roles = new List<Role>();
+            List<Role> roles = [];
             roles = _users.GetRolesList();
             if (roles != null && roles.Count > 0)
             {
                 string jsonData = JsonConvert.SerializeObject(roles);
                 return Ok(new ApiResponse(data: jsonData));
+            }
+            return BadRequest(new ApiResponse(404));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("[action]")]
+        public IActionResult GetStatuses()
+        {
+            List<Status> statuses = [];
+            statuses = _users.GetStatusesList();
+            if (statuses != null && statuses.Count > 0)
+            {
+                string jsonData = JsonConvert.SerializeObject(statuses);
+                return Ok(new ApiResponse(data: jsonData));
+            }
+            return BadRequest(new ApiResponse(404));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("[action]")]
+        public IActionResult ChangeUserRole(UserRole userRole)
+        {
+            if (userRole != null && userRole.UserId != 0)
+            {
+                _users.ChangeUserRole(userRole);
+                return Ok(new ApiResponse());
             }
             return BadRequest(new ApiResponse(404));
         }
