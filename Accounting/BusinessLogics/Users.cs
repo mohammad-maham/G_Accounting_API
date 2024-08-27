@@ -409,7 +409,9 @@ namespace Accounting.BusinessLogics
             if (roles != null && roles.Count > 0)
             {
                 foreach (UserRole role in roles)
+                {
                     role.RoleId = userRole.RoleId;
+                }
             }
         }
     }
