@@ -405,13 +405,12 @@ namespace Accounting.BusinessLogics
 
         public void ChangeUserRole(UserRole userRole)
         {
-            List<UserRole> roles = _accounting.UserRoles.Where(x => x.UserId == userRole.UserId).ToList();
-            if (roles != null && roles.Count > 0)
+            UserRole role = _accounting.UserRoles.Where(x => x.UserId == userRole.UserId).FirstOrDefault() ?? new UserRole();
+            if (role != null && role.Id != 0)
             {
-                foreach (UserRole role in roles)
-                {
-                    role.RoleId = userRole.RoleId;
-                }
+                role.RoleId = userRole.RoleId;
+                _accounting.UserRoles.Update(role);
+                _accounting.SaveChanges();
             }
         }
     }
