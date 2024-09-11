@@ -9,6 +9,7 @@ using Org.BouncyCastle.Pqc.Crypto.Lms;
 using RestSharp;
 using System.Globalization;
 using System.Net;
+using System.Reflection;
 namespace Accounting.BusinessLogics
 {
     public class Users : IUsers
@@ -440,6 +441,56 @@ namespace Accounting.BusinessLogics
 
                     // Parameters
                     request.AddJsonBody(new { Mobile = mobile, NationalCode = nationalCode });
+
+                    // Headers
+                    request.AddHeader("content-type", "application/json");
+                    request.AddHeader("cache-control", "no-cache");
+
+                    // Send SMS
+                    RestResponse response = client.ExecutePost(request);
+                    if (response != null && response.StatusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(response.Content))
+                    {
+                        ApiResponse? apiResponse = JsonConvert.DeserializeObject<ApiResponse>(response.Content);
+                        if (apiResponse != null && !string.IsNullOrEmpty(apiResponse.Data))
+                        {
+                            isOk = bool.Parse(apiResponse.Data);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                return isOk;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        public bool ValidateUserInfo(UserInfoAuthVM infoAuthVM)
+        {
+            bool isOk = false;
+            IConfigurationRoot? config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+            string host = config.GetSection("ApiUrls").GetValue<string>("Gateway")!;
+            short isActiveInqueries = config.GetValue<short>("ActiveInqueries");
+            if (isActiveInqueries == 1)
+            {
+                try
+                {
+                    // BaseURL
+                    RestClient client = new($"{host}/api/Authorization/GetValidateUserInfo");
+                    RestRequest request = new()
+                    {
+                        Method = Method.Post
+                    };
+
+                    // Parameters
+                    request.AddJsonBody(infoAuthVM);
 
                     // Headers
                     request.AddHeader("content-type", "application/json");

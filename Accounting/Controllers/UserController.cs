@@ -189,11 +189,31 @@ namespace Accounting.Controllers
         [Route("[action]")]
         public IActionResult CompleteProfile([FromBody] UserProfile profile)
         {
-            if (profile != null)
+            UserInfoAuthVM infoAuthVM = new UserInfoAuthVM();
+            if (profile != null && profile.UserId != 0)
             {
-                UserInfo userInfo = _users.InsertUserInfo(profile);
-                string? jsonData = JsonConvert.SerializeObject(userInfo);
-                return Ok(new ApiResponse(data: jsonData));
+                User? user = _users.FindUserById(profile.UserId);
+                if (user != null && user.Id != 0)
+                {
+                    infoAuthVM.Name = profile.FirstName;
+                    infoAuthVM.Family = profile.LastName;
+                    infoAuthVM.BirthDate = profile.BirthDay;
+                    infoAuthVM.NationalId = user.NationalCode.ToString();
+                    infoAuthVM.Mobile = $"0{user.Mobile.ToString()}";
+                    infoAuthVM.NationalCode = user.NationalCode.ToString();
+
+                    bool isValidUserInfo = _users.ValidateUserInfo(infoAuthVM);
+                    if (isValidUserInfo)
+                    {
+                        UserInfo userInfo = _users.InsertUserInfo(profile);
+                        string? jsonData = JsonConvert.SerializeObject(userInfo);
+                        return Ok(new ApiResponse(data: jsonData));
+                    }
+                    else
+                    {
+                        return BadRequest(new ApiResponse(400, message: "اطلاعات هویتی مطابقت ندارد!"));
+                    }
+                }
             }
             return BadRequest(new ApiResponse(500));
         }

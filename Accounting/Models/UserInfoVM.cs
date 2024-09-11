@@ -28,3 +28,12 @@ public class UserInfoVM
 
     public string? UserRole { get; set; }
 }
+public class UserInfoAuthVM
+{
+    public string? NationalCode { get; set; }
+    public string? Name { get; set; }
+    public string? Family { get; set; }
+    public string? NationalId { get; set; }
+    public string? Mobile { get; set; }
+    public string? BirthDate { get; set; }
+}
