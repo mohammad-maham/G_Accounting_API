@@ -54,26 +54,34 @@ namespace Accounting.Controllers
         public IActionResult SignUp([FromBody] UserRequest user)
         {
             User? registeredUser = null;
-            if (user.NationalCode != 0 && user.Mobile != 0)
+            if (user.NationalCode != 0 && user.Mobile != 0 && user.Mobile != null)
             {
-                registeredUser = _users.GetSignup(user);
-                if (registeredUser != null && registeredUser.Id != 0 && new int[] { 0, 11, 12 }.Contains(registeredUser.Status))
+                bool isValidUser = _users.ValidateMobileNationalCode($"0{user.Mobile.Value.ToString()}", user.NationalCode.ToString());
+                if (isValidUser)
                 {
-                    registeredUser.Status = 11; // "Waiting Send OTP"
-                    _users.UpdateUser(registeredUser);
-                    long otp = long.Parse(_auth.GenerateOTP(6));
-                    _auth.SendOTP(registeredUser, otp, "Register Verfication", true);
-                    string? jsonData = JsonConvert.SerializeObject(new User()
+                    registeredUser = _users.GetSignup(user);
+                    if (registeredUser != null && registeredUser.Id != 0 && new int[] { 0, 11, 12 }.Contains(registeredUser.Status))
                     {
-                        Id = registeredUser.Id,
-                        Email = registeredUser.Email,
-                        Mobile = registeredUser.Mobile,
-                        NationalCode = registeredUser.NationalCode,
-                        UserName = registeredUser.UserName
-                    });
-                    registeredUser.Status = 12; // "Waiting Confirm OTP"
-                    _users.UpdateUser(registeredUser);
-                    return Ok(new ApiResponse(data: jsonData));
+                        registeredUser.Status = 11; // "Waiting Send OTP"
+                        _users.UpdateUser(registeredUser);
+                        long otp = long.Parse(_auth.GenerateOTP(6));
+                        _auth.SendOTP(registeredUser, otp, "Register Verfication", true);
+                        string? jsonData = JsonConvert.SerializeObject(new User()
+                        {
+                            Id = registeredUser.Id,
+                            Email = registeredUser.Email,
+                            Mobile = registeredUser.Mobile,
+                            NationalCode = registeredUser.NationalCode,
+                            UserName = registeredUser.UserName
+                        });
+                        registeredUser.Status = 12; // "Waiting Confirm OTP"
+                        _users.UpdateUser(registeredUser);
+                        return Ok(new ApiResponse(data: jsonData));
+                    }
+                }
+                else
+                {
+                    return BadRequest(new ApiResponse(502, "کد ملی با شماره همراه مطابقت ندارد"));
                 }
             }
             return BadRequest(new ApiResponse(502, "با کدملی وارد شده، قبلا کاربری ثبت نام کرده است!"));

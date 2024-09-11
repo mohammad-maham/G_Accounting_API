@@ -27,5 +27,6 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         List<Role> GetRolesList();
         List<Status> GetStatusesList();
         void ChangeUserRole(UsersRoleVM userRole);
+        bool ValidateMobileNationalCode(string mobile, string nationalCode);
     }
 }

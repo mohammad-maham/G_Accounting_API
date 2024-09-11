@@ -91,17 +91,23 @@ namespace Accounting.BusinessLogics
         public void SendGoldOTPSMS(SMSModel sms)
         {
             // SMS Configurations
-            SMSOptions smsOptions = new ConfigurationBuilder()
+            //SMSOptions smsOptions = new ConfigurationBuilder()
+            //    .SetBasePath(Directory.GetCurrentDirectory())
+            //    .AddJsonFile("appsettings.json")
+            //    .Build()
+            //    .GetSection("ApiUrls")
+            //    .Get<SMSOptions>()!;
+
+            string host = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build()
-                .GetSection("SMSSettings")
-                .Get<SMSOptions>()!;
+                .GetSection("ApiUrls").GetValue<string>("Gateway")!;
 
             try
             {
                 // BaseURL
-                RestClient client = new($"{smsOptions!.Host}/api/SMTP/SendOTPSMS");
+                RestClient client = new($"{host}/api/SMTP/SendOTPSMS");
                 RestRequest request = new()
                 {
                     Method = Method.Post
