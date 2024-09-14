@@ -233,11 +233,7 @@ namespace Accounting.BusinessLogics
 
                     userInfo.FirstName = profile.FirstName;
                     userInfo.LastName = profile.LastName;
-                    if (!string.IsNullOrEmpty(profile.BirthDay))
-                    {
-                        userInfo.BirthDay = DateOnly.Parse(profile.BirthDay!);
-                    }
-
+                    userInfo.BirthDay = profile.BirthDay;
                     userInfo.Gender = profile.Gender;
                     userInfo.UserId = profile.UserId;
                     userInfo.SedadInfo = null;
@@ -245,6 +241,7 @@ namespace Accounting.BusinessLogics
                     userInfo.FatherName = profile.FatherName;
                     userInfo.RegDate = DateTime.Now;
                     userInfo.NationalCardImage = profile.NationalCardImage;
+
                     if (userinf == null)
                     {
                         _accounting.UserInfos.Add(userInfo);
@@ -372,7 +369,7 @@ namespace Accounting.BusinessLogics
                 Username = x.userInfo.userInfRoleUsers.userInfRoles.usr.UserName,
                 StatusId = x.userInfo.userInfRoleUsers.userInfRoles.usr.Status,
                 Status = x.status?.Caption,
-                Birthday = ConvertGregDateTimeToPersianString(x.userInfo.usrInfo != null && x.userInfo.usrInfo!.BirthDay.HasValue ? x.userInfo.usrInfo!.BirthDay!.Value.ToDateTime(TimeOnly.MinValue) : null, true),
+                Birthday = x.userInfo.usrInfo!.BirthDay/*ConvertGregDateTimeToPersianString(x.userInfo.usrInfo != null && x.userInfo.usrInfo!.BirthDay.HasValue ? x.userInfo.usrInfo!.BirthDay!.Value.ToDateTime(TimeOnly.MinValue) : null, true)*/,
                 Fathername = x.userInfo.usrInfo?.FatherName ?? "",
                 Firstname = x.userInfo.usrInfo?.FirstName ?? "",
                 Lastname = x.userInfo.usrInfo?.LastName ?? "",

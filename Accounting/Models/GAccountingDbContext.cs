@@ -181,6 +181,7 @@ public partial class GAccountingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.FatherName).HasMaxLength(100);
+            entity.Property(e => e.BirthDay).HasMaxLength(10);
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.LastName).HasMaxLength(100);
             entity.Property(e => e.SedadInfo).HasColumnType("json");

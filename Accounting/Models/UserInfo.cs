@@ -10,7 +10,7 @@ public partial class UserInfo
 
     public string? LastName { get; set; }
 
-    public DateOnly? BirthDay { get; set; }
+    public string? BirthDay { get; set; }
 
     public string? FatherName { get; set; }
 
