@@ -113,10 +113,8 @@ namespace Accounting.BusinessLogics
         {
             string token = string.Empty;
             User? user = FindUser(username, password);
-            if (user != null && user.NationalCode != 0 && user.Status >= 1)
-            {
+            if (user != null && user.NationalCode != 0 && new List<int> { 1, 2, 3 }.Contains(user.Status))
                 token = _auth.CreateToken(user);
-            }
             return token;
         }
 

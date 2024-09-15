@@ -1,7 +1,9 @@
-﻿using Accounting.BusinessLogics.IBusinessLogics;
+﻿using Accounting.BusinessLogics;
+using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Errors;
 using Accounting.Helpers;
 using Accounting.Models;
+using Google.Apis.Gmail.v1.Data;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -206,6 +208,8 @@ namespace Accounting.Controllers
                     if (isValidUserInfo)
                     {
                         UserInfo userInfo = _users.InsertUserInfo(profile);
+                        user.Status = 2; // "COMPLETE-PROFILE"
+                        _users.UpdateUser(user);
                         string? jsonData = JsonConvert.SerializeObject(userInfo);
                         return Ok(new ApiResponse(data: jsonData));
                     }
@@ -224,11 +228,17 @@ namespace Accounting.Controllers
         [Route("[action]")]
         public IActionResult SubmitContact([FromBody] UserContact userContact)
         {
-            if (userContact != null)
+            if (userContact != null && userContact.UserId != 0)
             {
-                Contact contact = _users.InsertUserContacts(userContact);
-                string? jsonData = JsonConvert.SerializeObject(contact);
-                return Ok(new ApiResponse(data: jsonData));
+                User? user = _users.FindUserById(userContact.UserId);
+                if (user != null)
+                {
+                    Contact contact = _users.InsertUserContacts(userContact);
+                    user.Status = 3; // "SUBMIT-CONTACT"
+                    _users.UpdateUser(user);
+                    string? jsonData = JsonConvert.SerializeObject(contact);
+                    return Ok(new ApiResponse(data: jsonData));
+                }
             }
             return Ok(new ApiResponse());
         }
