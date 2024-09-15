@@ -43,7 +43,7 @@ namespace Accounting.Controllers
                 }
                 else
                 {
-                    return BadRequest(new ApiResponse(400));
+                    return BadRequest(new ApiResponse(404));
                 }
             }
             return BadRequest(new ApiResponse(404));

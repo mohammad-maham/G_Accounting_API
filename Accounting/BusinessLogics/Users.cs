@@ -369,7 +369,7 @@ namespace Accounting.BusinessLogics
                 Username = x.userInfo.userInfRoleUsers.userInfRoles.usr.UserName,
                 StatusId = x.userInfo.userInfRoleUsers.userInfRoles.usr.Status,
                 Status = x.status?.Caption,
-                Birthday = x.userInfo.usrInfo!.BirthDay/*ConvertGregDateTimeToPersianString(x.userInfo.usrInfo != null && x.userInfo.usrInfo!.BirthDay.HasValue ? x.userInfo.usrInfo!.BirthDay!.Value.ToDateTime(TimeOnly.MinValue) : null, true)*/,
+                Birthday = x.userInfo.usrInfo?.BirthDay/*ConvertGregDateTimeToPersianString(x.userInfo.usrInfo != null && x.userInfo.usrInfo!.BirthDay.HasValue ? x.userInfo.usrInfo!.BirthDay!.Value.ToDateTime(TimeOnly.MinValue) : null, true)*/,
                 Fathername = x.userInfo.usrInfo?.FatherName ?? "",
                 Firstname = x.userInfo.usrInfo?.FirstName ?? "",
                 Lastname = x.userInfo.usrInfo?.LastName ?? "",

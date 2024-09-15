@@ -231,7 +231,7 @@ namespace Accounting.Services
             {
                 DateTime now = DateTime.Now;
                 int diff = (int)now.Subtract(useDate.Value).TotalMinutes;
-                return diff > 5; // per minute
+                return diff > 10; // per minute
             }
             return false;
         }
@@ -250,7 +250,7 @@ namespace Accounting.Services
                 OTPInfo otpInfo = JsonConvert.DeserializeObject<OTPInfo>(user.Otpinfo) ?? new OTPInfo();
                 DateTime now = DateTime.Now;
                 int diff = otpInfo.OTPSendDateTime.Subtract(now).Minutes; // per minute
-                if (diff < 5 && otpInfo.OTP == otp)
+                if (diff <= 10 && otpInfo.OTP == otp)
                 {
                     User? validUser = _accounting!.Users.FirstOrDefault(x => x.Id == user.Id);
                     if (validUser != null && validUser.Id != 0)
