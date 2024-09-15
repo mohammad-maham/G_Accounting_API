@@ -154,19 +154,24 @@ namespace Accounting.Services
             else
             {
                 // SMS Configurations
-                SMSOptions smsOptions = new ConfigurationBuilder()
+                string? host = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json")
                     .Build()
-                    .GetSection("SMSSettings")
-                    .Get<SMSOptions>()!;
+                    .GetSection("ApiUrls").GetValue<string>("Gateway");
+                //SMSOptions smsOptions = new ConfigurationBuilder()
+                //    .SetBasePath(Directory.GetCurrentDirectory())
+                //    .AddJsonFile("appsettings.json")
+                //    .Build()
+                //    .GetSection("SMSSettings")
+                //    .Get<SMSOptions>()!;
 
                 SMSOptions sms = new()
                 {
-                    Host = smsOptions.Host,
-                    Username = smsOptions.Username,
-                    Password = smsOptions.Password,
-                    Source = smsOptions.Source,
+                    Host = host,
+                    //Username = smsOptions.Username,
+                    //Password = smsOptions.Password,
+                    //Source = smsOptions.Source,
                     //Message = $"Verification code: #{otp}",
                     Message = $"{otp}",
                 };
