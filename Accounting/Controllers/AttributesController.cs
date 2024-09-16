@@ -28,27 +28,45 @@ namespace Accounting.Controllers
         {
             //bool isValid = await _auth!.VerifyTokenAsync(attributes.Token!, false);
             bool isValid = false;
-            long userId = TokenDecryptor.GetUserIdByToken(attributes.Token!);
-            if (userId != 0)
+            if (attributes != null && !string.IsNullOrEmpty(attributes.Token))
             {
-                User? user = _users.FindUserById(userId);
-                isValid = user != null && user.Id != 0;
+                long userId = TokenDecryptor.GetUserIdByToken(attributes.Token);
+                if (userId != 0)
+                {
+                    User? user = _users.FindUserById(userId);
+                    bool isTokenValid = _auth.VerifyToken(attributes.Token, false);
+                    isValid = user != null && user.Id != 0 && isTokenValid;
+                }
+                return isValid ? Ok(new ApiResponse(data: "true")) : BadRequest(new ApiResponse(401, data: "false"));
             }
-            return isValid ? Ok(new ApiResponse(data: "true")) : BadRequest(new ApiResponse(404, data: "false"));
+            return BadRequest(new ApiResponse(404, data: "false"));
         }
 
         [HttpPost]
         [Route("[action]")]
         public IActionResult GetUserInfo([FromBody] AttributesVM attributes)
         {
-            long userId = TokenDecryptor.GetUserIdByToken(attributes.Token!);
             //UserInfo? userInfo = _users!.FindUserInfo(userId);
             //FullUserInfoVM? userInfo = _users!.GetFindFullUserInfo(userId);
-            User? user = _users.FindUserById(userId);
-            if (user != null && user.Id != 0)
+            bool isValid = false;
+            if (attributes != null && !string.IsNullOrEmpty(attributes.Token))
             {
-                string jsonData = JsonConvert.SerializeObject(user);
-                return Ok(new ApiResponse(data: jsonData));
+                long userId = TokenDecryptor.GetUserIdByToken(attributes.Token);
+                User? user = _users.FindUserById(userId);
+                if (user != null && user.Id != 0)
+                {
+                    bool isTokenValid = _auth.VerifyToken(attributes.Token, false);
+                    isValid = user != null && user.Id != 0 && isTokenValid;
+                    if (isValid)
+                    {
+                        string jsonData = JsonConvert.SerializeObject(user);
+                        return Ok(new ApiResponse(data: jsonData));
+                    }
+                    else
+                    {
+                        return BadRequest(new ApiResponse(401));
+                    }
+                }
             }
             return BadRequest(new ApiResponse(404));
         }
