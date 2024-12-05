@@ -5,13 +5,16 @@ namespace Accounting.Models;
 
 public partial class GAccountingDbContext : DbContext
 {
+    private readonly IConfiguration _config;
     public GAccountingDbContext()
     {
+        _config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
     }
 
     public GAccountingDbContext(DbContextOptions<GAccountingDbContext> options)
         : base(options)
     {
+        _config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
     }
 
     public virtual DbSet<Action> Actions { get; set; }
@@ -46,7 +49,8 @@ public partial class GAccountingDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseNpgsql("Host=194.60.231.81:5432;Database=G_Accounting_DB;Username=postgres;Password=Maham@7796", x => x.UseNodaTime());
+        optionsBuilder.UseNpgsql(_config.GetConnectionString("GAccountingDbContext"), x => x.UseNodaTime());
+
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
     }
