@@ -154,31 +154,27 @@ namespace Accounting.Services
             else
             {
                 // SMS Configurations
-                string? host = new ConfigurationBuilder()
+                IConfigurationSection config = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json")
                     .Build()
-                    .GetSection("ApiUrls").GetValue<string>("Gateway");
-                //SMSOptions smsOptions = new ConfigurationBuilder()
-                //    .SetBasePath(Directory.GetCurrentDirectory())
-                //    .AddJsonFile("appsettings.json")
-                //    .Build()
-                //    .GetSection("SMSSettings")
-                //    .Get<SMSOptions>()!;
+                    .GetSection("ApiUrls");
+
+                string? host = config.GetValue<string>("CustomerCommunication");
 
                 SMSOptions sms = new()
                 {
                     Host = host,
-                    //Username = smsOptions.Username,
-                    //Password = smsOptions.Password,
-                    //Source = smsOptions.Source,
-                    //Message = $"Verification code: #{otp}",
                     Message = $"{otp}",
                 };
-                SMSModel smsModel = new() { Options = sms, Destination = (long)user.Mobile! };
+                SMSModel smsModel = new()
+                {
+                    Options = sms,
+                    Destination = (long)user.Mobile!,
+                    UserId = user.Id
+                };
 
                 // Send SMS
-                //await _smtp!.SendAsanakSMSAsync(smsModel);
                 _smtp!.SendGoldOTPSMS(smsModel);
             }
 

@@ -4,6 +4,7 @@
     {
         public long? Destination { get; set; }
         public SMSOptions? Options { get; set; }
+        public long? UserId{ get; set; }
     }
 
     public class SMSOptions

@@ -27,6 +27,8 @@ public class UserInfoVM
     public int? UserRoleId { get; set; }
 
     public string? UserRole { get; set; }
+    public string? Mobile { get; set; }
+    public string? Email { get; set; }
 }
 public class UserInfoAuthVM
 {

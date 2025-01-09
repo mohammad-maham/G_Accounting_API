@@ -88,6 +88,16 @@ namespace Accounting.BusinessLogics
                        UserRole = x.r.Description
                    })
                    .FirstOrDefault();
+
+            if (userInfo != null && userInfo.UserId > 0)
+            {
+                User? user = _accounting.Users.FirstOrDefault(x => x.Id == userInfo.UserId);
+                if (user != null && user.Id > 0)
+                {
+                    userInfo.Mobile = $"0{user.Mobile}";
+                    userInfo.Email = user.Email;
+                }
+            }
             return userInfo;
         }
 

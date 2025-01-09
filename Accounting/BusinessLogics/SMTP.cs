@@ -1,6 +1,7 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
 using Google.Apis.Gmail.v1;
+using Newtonsoft.Json.Linq;
 using RestSharp;
 using System.Net;
 using System.Net.Mail;
@@ -90,31 +91,32 @@ namespace Accounting.BusinessLogics
 
         public void SendGoldOTPSMS(SMSModel sms)
         {
-            // SMS Configurations
-            //SMSOptions smsOptions = new ConfigurationBuilder()
-            //    .SetBasePath(Directory.GetCurrentDirectory())
-            //    .AddJsonFile("appsettings.json")
-            //    .Build()
-            //    .GetSection("ApiUrls")
-            //    .Get<SMSOptions>()!;
-
-            string host = new ConfigurationBuilder()
+            var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build()
-                .GetSection("ApiUrls").GetValue<string>("Gateway")!;
+                .GetSection("ApiUrls");
+
+            string host = config.GetValue<string>("CustomerCommunication")!;
 
             try
             {
                 // BaseURL
-                RestClient client = new($"{host}/api/SMTP/SendOTPSMS");
+                RestClient client = new($"{host}/api/Communications/SendNotification");
                 RestRequest request = new()
                 {
                     Method = Method.Post
                 };
 
                 // Parameters
-                request.AddJsonBody(new { Mobile = sms.Destination!.Value.ToString(), OTP = sms.Options!.Message });
+                request.AddJsonBody(new
+                {
+                    NotifTypes = 105,
+                    NotifBody = sms.Options!.Message,
+                    SenderUserId = 1,
+                    NotifUnit = 1,
+                    RecieverUserId = sms.UserId
+                });
 
                 // Headers
                 request.AddHeader("content-type", "application/json");
