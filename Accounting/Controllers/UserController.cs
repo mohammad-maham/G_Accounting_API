@@ -90,7 +90,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [Route("[action]")]
         public IActionResult GetUserInfo([FromBody] User? user)
         {
@@ -174,7 +174,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [Route("[action]")]
         public IActionResult UpdateUser([FromBody] User user)
         {
@@ -187,7 +187,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [Route("[action]")]
         public IActionResult CompleteProfile([FromBody] UserProfile profile)
         {
@@ -223,7 +223,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         //[UserInfo]
         [Route("[action]")]
         public IActionResult SubmitContact([FromBody] UserContact userContact)
@@ -263,7 +263,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [Route("[action]")]
         public IActionResult SaveSessionInfo([FromBody] SessionInfo session)
         {
@@ -276,7 +276,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [Route("[action]")]
         public IActionResult UpdateUserStatus([FromBody] UsersVM usersVM)
         {
@@ -294,7 +294,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [Route("[action]")]
         public IActionResult GetUsers()
         {
@@ -309,7 +309,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [Route("[action]")]
         public IActionResult GetRoles()
         {
@@ -324,7 +324,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [Route("[action]")]
         public IActionResult GetStatuses()
         {
@@ -339,7 +339,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
         [Route("[action]")]
         public IActionResult ChangeUserRole(UsersRoleVM userRole)
         {
