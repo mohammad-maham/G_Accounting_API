@@ -119,12 +119,19 @@ namespace Accounting.BusinessLogics
         }
 
         [Obsolete]
-        public string GetSignin(string username, string password)
+        public string GetSignin(string username, string? password = "")
         {
+            User? user = new();
             string token = string.Empty;
-            User? user = FindUser(username, password);
+
+            if (!string.IsNullOrEmpty(password))
+                user = FindUser(username, password);
+            else
+                user = FindUser(username);
+
             if (user != null && user.NationalCode != 0 && new List<int> { 1, 2, 3 }.Contains(user.Status))
                 token = _auth.CreateToken(user);
+
             return token;
         }
 

@@ -6,6 +6,9 @@ using Accounting.Models;
 using Google.Apis.Gmail.v1.Data;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using static System.Net.WebRequestMethods;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Accounting.Controllers
 {
@@ -347,6 +350,107 @@ namespace Accounting.Controllers
             {
                 _users.ChangeUserRole(userRole);
                 return Ok(new ApiResponse());
+            }
+            return BadRequest(new ApiResponse(404));
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult Auth([FromBody] UsersVM user)
+        {
+            bool isOk = false;
+            string token = string.Empty;
+
+            bool isInquiery = (user.NationalCode != null && user.NationalCode > 0)
+                && string.IsNullOrEmpty(user.Password);
+
+            bool isCompleteOk = (user.NationalCode != null && user.NationalCode > 0)
+                && !string.IsNullOrEmpty(user.Password);
+
+            if (isCompleteOk)
+            {
+                token = _users.GetSignin(user.NationalCode.ToString()!, user.Password!);
+                return Ok(new ApiResponse(data: token));
+            }
+            else if (isInquiery)
+            {
+                User? findedUser = _users.FindUser(user.NationalCode.ToString()!);
+                isOk = findedUser != null && findedUser.Id > 0;
+
+                if (isOk)
+                {
+                    findedUser!.Status = 11; // "Waiting Send OTP"
+                    _users.UpdateUser(findedUser);
+                }
+
+                return Ok(new ApiResponse(data: isOk.ToString().ToLower()));
+            }
+
+            return BadRequest(new ApiResponse(404));
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult SendAuthOTP([FromBody] UsersVM user)
+        {
+            if (user.NationalCode != null && user.NationalCode > 0)
+            {
+                User? findedUser = _users.FindUser(user.NationalCode.ToString()!);
+                bool isOk = findedUser != null && findedUser.Id > 0;
+
+                if (isOk)
+                {
+                    long? mobile = findedUser!.Mobile;
+
+                    if ((mobile == null || mobile == 0) && user.Mobile != null && user.Mobile > 0)
+                    {
+                        bool isValidUser = _users.ValidateMobileNationalCode($"0{user.Mobile.ToString()}", user.NationalCode!.ToString()!);
+                        mobile = isValidUser ? user.Mobile : mobile;
+                    }
+
+                    findedUser.Mobile = mobile;
+                    if (findedUser.Mobile != null && findedUser.Mobile > 0)
+                    {
+                        long otp = long.Parse(_auth.GenerateOTP(6));
+                        _auth.SendOTP(findedUser!, otp, user.Origin ?? "");
+
+                        user.Status = 12; // "Waiting Confirm OTP"
+                        _users.UpdateUser(findedUser);
+                    }
+                }
+            }
+            return BadRequest(new ApiResponse(404));
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult VerifyAuthOTP([FromBody] UsersVM user)
+        {
+            if (user.NationalCode != null && user.NationalCode > 0 && user.OTP > 0)
+            {
+                User? findedUser = _users.FindUser(user.NationalCode.ToString()!);
+                bool isOk = findedUser != null && findedUser.Id > 0;
+
+                if (isOk)
+                {
+                    bool isValid = _auth.VerifyOTP(findedUser!, user.OTP!.Value);
+                    if (isValid)
+                    {
+                        string token = _users.GetSignin(user.NationalCode.ToString()!);
+
+                        if (!string.IsNullOrEmpty(user.Password))
+                            _users.SetPassword(user.NationalCode.ToString()!, user.Password);
+
+                        user.Status = 1; // "ACTIVE"
+                        _users.UpdateUser(findedUser!);
+
+                        return Ok(new ApiResponse(data: token));
+                    }
+                    else
+                    {
+                        return BadRequest(new ApiResponse(201));
+                    }
+                }
             }
             return BadRequest(new ApiResponse(404));
         }

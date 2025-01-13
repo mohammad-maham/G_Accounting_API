@@ -4,7 +4,7 @@ namespace Accounting.BusinessLogics.IBusinessLogics
 {
     public interface IUsers
     {
-        string GetSignin(string username, string password);
+        string GetSignin(string username, string? password = "");
         User? GetSignup(UserRequest userReq);
         bool IsExistUser(long nationalCode);
         User? FindUser(string username);

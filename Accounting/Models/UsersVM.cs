@@ -11,6 +11,8 @@
         public string? Otpinfo { get; set; }
         public string? Username { get; set; }
         public string? Password { get; set; }
+        public long? OTP { get; set; }
+        public string? Origin { get; set; }
     }
 
     public class GetUsersVM
