@@ -13,6 +13,8 @@
         public string? Password { get; set; }
         public long? OTP { get; set; }
         public string? Origin { get; set; }
+        public string? ReferralCode { get; set; }
+        public int UserType { get; set; }
     }
 
     public class GetUsersVM

@@ -23,4 +23,10 @@ public partial class User
     public string? UserName { get; set; }
 
     public string? Password { get; set; }
+
+    public string? ReferralCode { get; set; }
+
+    public string? IdentificationCode { get; set; }
+
+    public int UserType { get; set; }
 }

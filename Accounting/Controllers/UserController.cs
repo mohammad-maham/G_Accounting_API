@@ -1,14 +1,10 @@
-﻿using Accounting.BusinessLogics;
-using Accounting.BusinessLogics.IBusinessLogics;
+﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Errors;
 using Accounting.Helpers;
 using Accounting.Models;
-using Google.Apis.Gmail.v1.Data;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using static System.Net.WebRequestMethods;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Text.RegularExpressions;
 
 namespace Accounting.Controllers
 {
@@ -61,7 +57,7 @@ namespace Accounting.Controllers
             User? registeredUser = null;
             if (user.NationalCode != 0 && user.Mobile != 0 && user.Mobile != null)
             {
-                bool isValidUser = _users.ValidateMobileNationalCode($"0{user.Mobile.Value.ToString()}", user.NationalCode.ToString());
+                bool isValidUser = _users.ValidateMobileNationalCode($"0{user.Mobile.Value}", user.NationalCode.ToString());
                 if (isValidUser)
                 {
                     registeredUser = _users.GetSignup(user);
@@ -194,7 +190,7 @@ namespace Accounting.Controllers
         [Route("[action]")]
         public IActionResult CompleteProfile([FromBody] UserProfile profile)
         {
-            UserInfoAuthVM infoAuthVM = new UserInfoAuthVM();
+            UserInfoAuthVM infoAuthVM = new();
             if (profile != null && profile.UserId != 0)
             {
                 User? user = _users.FindUserById(profile.UserId);
@@ -204,7 +200,7 @@ namespace Accounting.Controllers
                     infoAuthVM.Family = profile.LastName;
                     infoAuthVM.BirthDate = profile.BirthDay;
                     infoAuthVM.NationalId = user.NationalCode.ToString();
-                    infoAuthVM.Mobile = $"0{user.Mobile.ToString()}";
+                    infoAuthVM.Mobile = $"0{user.Mobile}";
                     infoAuthVM.NationalCode = user.NationalCode.ToString();
 
                     bool isValidUserInfo = _users.ValidateUserInfo(infoAuthVM);
@@ -359,12 +355,13 @@ namespace Accounting.Controllers
         public IActionResult Auth([FromBody] UsersVM user)
         {
             bool isOk = false;
+            bool isRegister = false;
             string token = string.Empty;
 
-            bool isInquiery = (user.NationalCode != null && user.NationalCode > 0)
+            bool isInquiery = user.NationalCode != null && user.NationalCode > 0
                 && string.IsNullOrEmpty(user.Password);
 
-            bool isCompleteOk = (user.NationalCode != null && user.NationalCode > 0)
+            bool isCompleteOk = user.NationalCode != null && user.NationalCode > 0
                 && !string.IsNullOrEmpty(user.Password);
 
             if (isCompleteOk)
@@ -382,8 +379,19 @@ namespace Accounting.Controllers
                     findedUser!.Status = 11; // "Waiting Send OTP"
                     _users.UpdateUser(findedUser);
                 }
+                else
+                {
+                    UserRequest request = new UserRequest() { NationalCode = user.NationalCode!.Value };
+                    User? newUser = _users.GetSignup(request);
+                    if (newUser != null)
+                    {
+                        findedUser!.Status = 11; // "Waiting Send OTP"
+                        _users.UpdateUser(findedUser);
+                        isRegister = true;
+                    }
+                }
 
-                return Ok(new ApiResponse(data: isOk.ToString().ToLower()));
+                return Ok(new ApiResponse(data: (!isOk && isRegister) || (isOk) ? "true" : "false", message: !isOk && isRegister ? "User Created Successfully" : "User Is Exist!"));
             }
 
             return BadRequest(new ApiResponse(404));
@@ -393,7 +401,7 @@ namespace Accounting.Controllers
         [Route("[action]")]
         public IActionResult SendAuthOTP([FromBody] UsersVM user)
         {
-            if (user.NationalCode != null && user.NationalCode > 0)
+            if (user.NationalCode is not null and > 0)
             {
                 User? findedUser = _users.FindUser(user.NationalCode.ToString()!);
                 bool isOk = findedUser != null && findedUser.Id > 0;
@@ -404,17 +412,17 @@ namespace Accounting.Controllers
 
                     if ((mobile == null || mobile == 0) && user.Mobile != null && user.Mobile > 0)
                     {
-                        bool isValidUser = _users.ValidateMobileNationalCode($"0{user.Mobile.ToString()}", user.NationalCode!.ToString()!);
+                        bool isValidUser = _users.ValidateMobileNationalCode($"0{user.Mobile}", user.NationalCode!.ToString()!);
                         mobile = isValidUser ? user.Mobile : mobile;
                     }
 
                     findedUser.Mobile = mobile;
-                    if (findedUser.Mobile != null && findedUser.Mobile > 0)
+                    if (findedUser.Mobile is not null and > 0)
                     {
                         long otp = long.Parse(_auth.GenerateOTP(6));
                         _auth.SendOTP(findedUser!, otp, user.Origin ?? "");
 
-                        user.Status = 12; // "Waiting Confirm OTP"
+                        findedUser.Status = 12; // "Waiting Confirm OTP"
                         _users.UpdateUser(findedUser);
                     }
                 }
@@ -439,9 +447,28 @@ namespace Accounting.Controllers
                         string token = _users.GetSignin(user.NationalCode.ToString()!);
 
                         if (!string.IsNullOrEmpty(user.Password))
-                            _users.SetPassword(user.NationalCode.ToString()!, user.Password);
+                        {
+                            // match further only if there are two digits anywhere
+                            // match further only if there is an upper-lower case letter
+                            // match further only if theres anything except letter or digit
+                            // match 8 or more characters
+                            string regex = @"^(?=(.*\d){2})(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z\d]).{8,}$";
+                            Match match = Regex.Match(user.Password!, regex, RegexOptions.IgnoreCase);
 
-                        user.Status = 1; // "ACTIVE"
+                            if (match.Success)
+                            {
+                                string idCode = IdentificationCodeGen.GenerateCode(findedUser!.NationalCode.ToString());
+                                _users.SetPassword(user.NationalCode.ToString()!, user.Password);
+                                findedUser.ReferralCode = user.ReferralCode;
+                                findedUser.IdentificationCode = idCode;
+                            }
+                            else
+                            {
+                                return BadRequest(new ApiResponse(504));
+                            }
+                        }
+
+                        findedUser!.Status = 1; // "ACTIVE"
                         _users.UpdateUser(findedUser!);
 
                         return Ok(new ApiResponse(data: token));
