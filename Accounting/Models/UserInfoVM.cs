@@ -30,7 +30,7 @@ public class UserInfoVM
     public string? Mobile { get; set; }
     public string? Email { get; set; }
 }
-public class UserInfoAuthVM
+public class RealUserInfoAuthVM
 {
     public string? NationalCode { get; set; }
     public string? Name { get; set; }
@@ -38,4 +38,16 @@ public class UserInfoAuthVM
     public string? NationalId { get; set; }
     public string? Mobile { get; set; }
     public string? BirthDate { get; set; }
+}
+
+public class LegalUserInfoAuthVM
+{
+    public string? NationalCode { get; set; }
+}
+
+public class LegalUserInfoAuthResult
+{
+    public string? NationalId { get; set; }
+    public bool? Validation { get; set; }
+    public string? Name { get; set; }
 }

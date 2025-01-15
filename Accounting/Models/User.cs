@@ -8,15 +8,11 @@ public partial class User
 {
     public long Id { get; set; }
 
-    public long NationalCode { get; set; }
-
     public DateTime RegDate { get; set; }
 
-    public int Status { get; set; }
+    public short Status { get; set; }
 
     public string? Email { get; set; }
-
-    public long? Mobile { get; set; }
 
     public string? Otpinfo { get; set; }
 
@@ -24,9 +20,13 @@ public partial class User
 
     public string? Password { get; set; }
 
-    public string? ReferralCode { get; set; }
+    public long? Mobile { get; set; }
+
+    public long NationalCode { get; set; }
 
     public string? IdentificationCode { get; set; }
 
-    public int UserType { get; set; }
+    public string? ReferralCode { get; set; }
+
+    public short UserType { get; set; }
 }

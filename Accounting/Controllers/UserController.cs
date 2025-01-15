@@ -188,9 +188,9 @@ namespace Accounting.Controllers
         [HttpPost]
         //[Authorize]
         [Route("[action]")]
-        public IActionResult CompleteProfile([FromBody] UserProfile profile)
+        public IActionResult CompleteRealProfile([FromBody] UserProfile profile)
         {
-            UserInfoAuthVM infoAuthVM = new();
+            RealUserInfoAuthVM infoAuthVM = new();
             if (profile != null && profile.UserId != 0)
             {
                 User? user = _users.FindUserById(profile.UserId);
@@ -203,10 +203,43 @@ namespace Accounting.Controllers
                     infoAuthVM.Mobile = $"0{user.Mobile}";
                     infoAuthVM.NationalCode = user.NationalCode.ToString();
 
-                    bool isValidUserInfo = _users.ValidateUserInfo(infoAuthVM);
+                    bool isValidUserInfo = _users.ValidateRealUserInfo(infoAuthVM);
                     if (isValidUserInfo)
                     {
-                        UserInfo userInfo = _users.InsertUserInfo(profile);
+                        UserInfo userInfo = _users.InsertRealUserInfo(profile);
+                        user.Status = 2; // "COMPLETE-PROFILE"
+                        _users.UpdateUser(user);
+                        string? jsonData = JsonConvert.SerializeObject(userInfo);
+                        return Ok(new ApiResponse(data: jsonData));
+                    }
+                    else
+                    {
+                        return BadRequest(new ApiResponse(400, message: "اطلاعات هویتی مطابقت ندارد!"));
+                    }
+                }
+            }
+            return BadRequest(new ApiResponse(500));
+        }
+
+        [HttpPost]
+        //[Authorize]
+        [Route("[action]")]
+        public IActionResult CompleteLegalProfile([FromBody] LegalUserInfo profile)
+        {
+            LegalUserInfoAuthVM infoAuthVM = new();
+            if (profile != null && profile.UserId != 0)
+            {
+                User? user = _users.FindUserById(profile.UserId);
+                if (user != null && user.Id != 0)
+                {
+                    infoAuthVM.NationalCode = user.NationalCode.ToString();
+
+                    LegalUserInfoAuthResult? authResult = _users.ValidateLegalUserInfo(infoAuthVM);
+                    bool isOk = authResult != null && authResult.Validation==true && authResult!.NationalId == user.NationalCode.ToString() && authResult!.Name == profile.Name;
+
+                    if (isOk)
+                    {
+                        LegalUserInfo userInfo = _users.InsertLegalUserInfo(profile);
                         user.Status = 2; // "COMPLETE-PROFILE"
                         _users.UpdateUser(user);
                         string? jsonData = JsonConvert.SerializeObject(userInfo);

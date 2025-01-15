@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Accounting.Models;
 
-public partial class Role
+public partial class Service
 {
     public short Id { get; set; }
 
@@ -11,5 +11,9 @@ public partial class Role
 
     public short Status { get; set; }
 
-    public string? Description { get; set; }
+    public string? Caption { get; set; }
+
+    public string? AccessInfo { get; set; }
+
+    public short ServiceType { get; set; }
 }

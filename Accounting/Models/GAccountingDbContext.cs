@@ -16,14 +16,13 @@ public partial class GAccountingDbContext : DbContext
     {
         _config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
     }
-
     public virtual DbSet<Action> Actions { get; set; }
-
-    public virtual DbSet<ArcUser> ArcUsers { get; set; }
 
     public virtual DbSet<Contact> Contacts { get; set; }
 
     public virtual DbSet<DataAccessType> DataAccessTypes { get; set; }
+
+    public virtual DbSet<LegalUserInfo> LegalUserInfos { get; set; }
 
     public virtual DbSet<Menu> Menus { get; set; }
 
@@ -35,7 +34,11 @@ public partial class GAccountingDbContext : DbContext
 
     public virtual DbSet<RoleDataAccess> RoleDataAccesses { get; set; }
 
+    public virtual DbSet<Service> Services { get; set; }
+
     public virtual DbSet<SessionMgr> SessionMgrs { get; set; }
+
+    public virtual DbSet<Setting> Settings { get; set; }
 
     public virtual DbSet<Status> Statuses { get; set; }
 
@@ -46,6 +49,8 @@ public partial class GAccountingDbContext : DbContext
     public virtual DbSet<UserRole> UserRoles { get; set; }
 
     public virtual DbSet<UserSession> UserSessions { get; set; }
+
+    public virtual DbSet<UserType> UserTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -61,7 +66,7 @@ public partial class GAccountingDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("Action_pkey");
 
-            entity.ToTable("Action");
+            entity.ToTable("Action", "archive");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(100);
@@ -76,8 +81,6 @@ public partial class GAccountingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Addresses).HasColumnType("jsonb");
-            entity.Property(e => e.Mobiles).HasColumnType("bigint[]");
-            entity.Property(e => e.Tells).HasColumnType("bigint[]");
         });
 
         modelBuilder.Entity<DataAccessType>(entity =>
@@ -88,6 +91,18 @@ public partial class GAccountingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<LegalUserInfo>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("LegalUserInfo_pkey");
+
+            entity.ToTable("LegalUserInfo");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Name).HasMaxLength(500);
+            entity.Property(e => e.RegDate).HasColumnType("time without time zone");
+            entity.Property(e => e.RegistrationDate).HasColumnType("time without time zone");
         });
 
         modelBuilder.Entity<Menu>(entity =>
@@ -140,13 +155,38 @@ public partial class GAccountingDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
         });
 
+        modelBuilder.Entity<Service>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Service_pkey");
+
+            entity.ToTable("Service");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.AccessInfo).HasColumnType("json");
+            entity.Property(e => e.Caption).HasMaxLength(50);
+            entity.Property(e => e.Name).HasMaxLength(50);
+        });
+
         modelBuilder.Entity<SessionMgr>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("SessionMGR_pkey");
 
             entity.ToTable("SessionMGR");
 
-            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+            entity.Property(e => e.Id).ValueGeneratedNever();
+        });
+
+        modelBuilder.Entity<Setting>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Setting_pkey");
+
+            entity.ToTable("Setting");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Caption).HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Nsme).HasMaxLength(100);
+            entity.Property(e => e.Value).HasMaxLength(200);
         });
 
         modelBuilder.Entity<Status>(entity =>
@@ -168,13 +208,15 @@ public partial class GAccountingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Email).HasMaxLength(50);
-            entity.Property(e => e.Mobile).HasColumnType("bigint");
-            entity.Property(e => e.NationalCode).HasColumnType("bigint");
+            entity.Property(e => e.IdentificationCode).HasMaxLength(20);
+            entity.Property(e => e.NationalCode).HasPrecision(11);
             entity.Property(e => e.Otpinfo)
                 .HasColumnType("json")
                 .HasColumnName("OTPInfo");
             entity.Property(e => e.Password).HasMaxLength(100);
+            entity.Property(e => e.ReferralCode).HasMaxLength(20);
             entity.Property(e => e.UserName).HasMaxLength(50);
+            entity.Property(e => e.UserType).HasDefaultValue((short)100);
         });
 
         modelBuilder.Entity<UserInfo>(entity =>
@@ -184,12 +226,12 @@ public partial class GAccountingDbContext : DbContext
             entity.ToTable("UserInfo");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.FatherName).HasMaxLength(100);
             entity.Property(e => e.BirthDay).HasMaxLength(10);
+            entity.Property(e => e.FatherName).HasMaxLength(100);
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.LastName).HasMaxLength(100);
-            entity.Property(e => e.SedadInfo).HasColumnType("json");
             entity.Property(e => e.NationalCardImage).HasColumnType("json");
+            entity.Property(e => e.SedadInfo).HasColumnType("json");
         });
 
         modelBuilder.Entity<UserRole>(entity =>
@@ -209,6 +251,17 @@ public partial class GAccountingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.SessionInfo).HasColumnType("json");
+        });
+
+        modelBuilder.Entity<UserType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("UserType_pkey");
+
+            entity.ToTable("UserType");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Name).HasMaxLength(50);
         });
 
         OnModelCreatingPartial(modelBuilder);

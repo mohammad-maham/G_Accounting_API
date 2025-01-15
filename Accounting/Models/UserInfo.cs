@@ -1,4 +1,8 @@
-﻿namespace Accounting.Models;
+﻿using System;
+using System.Collections.Generic;
+using NodaTime;
+
+namespace Accounting.Models;
 
 public partial class UserInfo
 {
@@ -9,8 +13,6 @@ public partial class UserInfo
     public string? FirstName { get; set; }
 
     public string? LastName { get; set; }
-
-    public string? BirthDay { get; set; }
 
     public string? FatherName { get; set; }
 
@@ -23,4 +25,6 @@ public partial class UserInfo
     public short? Gender { get; set; }
 
     public string? NationalCardImage { get; set; }
+
+    public string? BirthDay { get; set; }
 }

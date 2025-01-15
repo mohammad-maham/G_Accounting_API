@@ -10,7 +10,7 @@ public partial class ArcUser
 
     public decimal NationalCode { get; set; }
 
-    public Instant RegDate { get; set; }
+    public DateTime RegDate { get; set; }
 
     public short Status { get; set; }
 
@@ -24,5 +24,5 @@ public partial class ArcUser
 
     public string? Password { get; set; }
 
-    public Instant ArcDate { get; set; }
+    public DateTime ArcDate { get; set; }
 }

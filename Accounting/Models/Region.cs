@@ -5,7 +5,7 @@ namespace Accounting.Models;
 
 public partial class Region
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     public string Name { get; set; } = null!;
 
@@ -15,5 +15,5 @@ public partial class Region
 
     public int? ParentId { get; set; }
 
-    public short ProvinceCode { get; set; }
+    public int ProvinceCode { get; set; }
 }

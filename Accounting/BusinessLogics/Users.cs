@@ -5,11 +5,9 @@ using Accounting.Models;
 using Accounting.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Pqc.Crypto.Lms;
 using RestSharp;
 using System.Globalization;
 using System.Net;
-using System.Reflection;
 namespace Accounting.BusinessLogics
 {
     public class Users : IUsers
@@ -63,6 +61,10 @@ namespace Accounting.BusinessLogics
         public UserInfo? FindUserInfo(long userId)
         {
             return _accounting.UserInfos.FirstOrDefault(x => x.UserId == userId);
+        }
+        public LegalUserInfo? FindLegalUserInfo(long userId)
+        {
+            return _accounting.LegalUserInfos.FirstOrDefault(x => x.UserId == userId);
         }
 
         public UserInfoVM? FindFullUserInfo(long userId)
@@ -231,7 +233,7 @@ namespace Accounting.BusinessLogics
             return contact;
         }
 
-        public UserInfo InsertUserInfo(UserProfile profile)
+        public UserInfo InsertRealUserInfo(UserProfile profile)
         {
             UserInfo userInfo = new();
             User? user = FindUserById(profile.UserId);
@@ -481,7 +483,7 @@ namespace Accounting.BusinessLogics
             }
         }
 
-        public bool ValidateUserInfo(UserInfoAuthVM infoAuthVM)
+        public bool ValidateRealUserInfo(RealUserInfoAuthVM infoAuthVM)
         {
             bool isOk = false;
             IConfigurationRoot? config = new ConfigurationBuilder()
@@ -495,7 +497,7 @@ namespace Accounting.BusinessLogics
                 try
                 {
                     // BaseURL
-                    RestClient client = new($"{host}/api/Authorization/GetValidateUserInfo");
+                    RestClient client = new($"{host}/api/Authorization/GetValidateRealUserInfo");
                     RestRequest request = new()
                     {
                         Method = Method.Post
@@ -528,6 +530,105 @@ namespace Accounting.BusinessLogics
             else
             {
                 return true;
+            }
+        }
+
+        public LegalUserInfo InsertLegalUserInfo(LegalUserInfo profile)
+        {
+            LegalUserInfo userInfo = new();
+            User? user = FindUserById(profile.UserId);
+            LegalUserInfo? userinf = FindLegalUserInfo(profile.UserId);
+            if (user != null)
+            {
+                userInfo = userinf ?? new LegalUserInfo();
+                try
+                {
+                    if (userinf == null)
+                    {
+                        userInfo.Id = DataBaseHelper.GetPostgreSQLSequenceNextVal(_accounting, "seq_userinfo");
+                    }
+
+                    userInfo.UserId = profile.UserId;
+                    userInfo.Name = profile.Name;
+                    userInfo.RegistrationDate = DateTime.Now;
+                    userInfo.RegistrationNumber = profile.RegistrationNumber;
+                    userInfo.UserId = profile.UserId;
+                    userInfo.Status = 0;
+                    userInfo.RegDate = DateTime.Now;
+                    userInfo.RegistrationRegionId = profile.RegistrationRegionId;
+                    userInfo.LastModifyInfoDate = profile.LastModifyInfoDate;
+                    userInfo.AgentRole = profile.AgentRole;
+
+                    if (userinf == null)
+                    {
+                        _accounting.LegalUserInfos.Add(userInfo);
+                    }
+                    else
+                    {
+                        _accounting.LegalUserInfos.Update(userInfo);
+                    }
+
+                    _accounting.SaveChanges();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    throw;
+                }
+            }
+            return userInfo;
+        }
+
+        public LegalUserInfoAuthResult? ValidateLegalUserInfo(LegalUserInfoAuthVM infoAuthVM)
+        {
+            LegalUserInfoAuthResult? result =new();
+
+            IConfigurationRoot? config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            string host = config.GetSection("ApiUrls").GetValue<string>("Gateway")!;
+            short isActiveInqueries = config.GetValue<short>("ActiveInqueries");
+
+            if (isActiveInqueries == 1)
+            {
+                try
+                {
+                    // BaseURL
+                    RestClient client = new($"{host}/api/Authorization/GetValidateLegalUserInfo");
+                    RestRequest request = new()
+                    {
+                        Method = Method.Post
+                    };
+
+                    // Parameters
+                    request.AddJsonBody(infoAuthVM);
+
+                    // Headers
+                    request.AddHeader("content-type", "application/json");
+                    request.AddHeader("cache-control", "no-cache");
+
+                    // Send SMS
+                    RestResponse response = client.ExecutePost(request);
+                    if (response != null && response.StatusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(response.Content))
+                    {
+                        ApiResponse? apiResponse = JsonConvert.DeserializeObject<ApiResponse>(response.Content);
+                        if (apiResponse != null && !string.IsNullOrEmpty(apiResponse.Data))
+                        {
+                            result = JsonConvert.DeserializeObject<LegalUserInfoAuthResult>(apiResponse.Data);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                return result;
+            }
+            else
+            {
+                return result;
             }
         }
     }

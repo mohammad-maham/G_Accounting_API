@@ -10,8 +10,10 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         User? FindUser(string username);
         User? FindUser(string username, string password);
         void SetPassword(string username, string password);
-        UserInfo InsertUserInfo(UserProfile profile);
+        UserInfo InsertRealUserInfo(UserProfile profile);
+        LegalUserInfo InsertLegalUserInfo(LegalUserInfo profile);
         UserInfo? FindUserInfo(long userId);
+        LegalUserInfo? FindLegalUserInfo(long userId);
         UserInfoVM? FindFullUserInfo(long userId);
         Contact InsertUserContacts(UserContact userContact);
         Contact? FindUserContact(long userId);
@@ -28,6 +30,7 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         List<Status> GetStatusesList();
         void ChangeUserRole(UsersRoleVM userRole);
         bool ValidateMobileNationalCode(string mobile, string nationalCode);
-        bool ValidateUserInfo(UserInfoAuthVM infoAuthVM);
+        bool ValidateRealUserInfo(RealUserInfoAuthVM infoAuthVM);
+        LegalUserInfoAuthResult? ValidateLegalUserInfo(LegalUserInfoAuthVM infoAuthVM);
     }
 }
