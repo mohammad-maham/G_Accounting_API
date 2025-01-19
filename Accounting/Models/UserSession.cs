@@ -13,4 +13,6 @@ public partial class UserSession
     public DateTime SessionDate { get; set; }
 
     public string SessionInfo { get; set; } = null!;
+
+    public short Status { get; set; }
 }

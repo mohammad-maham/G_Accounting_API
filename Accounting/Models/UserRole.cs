@@ -16,5 +16,5 @@ public partial class UserRole
 
     public long RegUserId { get; set; }
 
-    public int RoleId { get; set; }
+    public long RoleId { get; set; }
 }

@@ -29,4 +29,6 @@ public partial class User
     public string? ReferralCode { get; set; }
 
     public short UserType { get; set; }
+
+    public DateTime? UnlockDate { get; set; }
 }

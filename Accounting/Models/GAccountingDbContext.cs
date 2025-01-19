@@ -34,6 +34,8 @@ public partial class GAccountingDbContext : DbContext
 
     public virtual DbSet<RoleDataAccess> RoleDataAccesses { get; set; }
 
+    public virtual DbSet<RoleStateAccess> RoleStateAccesses { get; set; }
+
     public virtual DbSet<Service> Services { get; set; }
 
     public virtual DbSet<SessionMgr> SessionMgrs { get; set; }
@@ -49,6 +51,10 @@ public partial class GAccountingDbContext : DbContext
     public virtual DbSet<UserRole> UserRoles { get; set; }
 
     public virtual DbSet<UserSession> UserSessions { get; set; }
+
+    public virtual DbSet<UserState> UserStates { get; set; }
+
+    public virtual DbSet<UserStateType> UserStateTypes { get; set; }
 
     public virtual DbSet<UserType> UserTypes { get; set; }
 
@@ -155,6 +161,15 @@ public partial class GAccountingDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
         });
 
+        modelBuilder.Entity<RoleStateAccess>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("RoleStateAccess_pkey");
+
+            entity.ToTable("RoleStateAccess");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+        });
+
         modelBuilder.Entity<Service>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("Service_pkey");
@@ -209,12 +224,12 @@ public partial class GAccountingDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Email).HasMaxLength(50);
             entity.Property(e => e.IdentificationCode).HasMaxLength(20);
-            entity.Property(e => e.NationalCode).HasPrecision(11);
             entity.Property(e => e.Otpinfo)
                 .HasColumnType("json")
                 .HasColumnName("OTPInfo");
             entity.Property(e => e.Password).HasMaxLength(100);
             entity.Property(e => e.ReferralCode).HasMaxLength(20);
+            entity.Property(e => e.UnlockDate).HasColumnType("time without time zone");
             entity.Property(e => e.UserName).HasMaxLength(50);
             entity.Property(e => e.UserType).HasDefaultValue((short)100);
         });
@@ -251,6 +266,26 @@ public partial class GAccountingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.SessionInfo).HasColumnType("json");
+            entity.Property(e => e.Status).HasDefaultValue((short)0);
+        });
+
+        modelBuilder.Entity<UserState>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("UserStatte_pkey");
+
+            entity.ToTable("UserState");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+        });
+
+        modelBuilder.Entity<UserStateType>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("UserStateType_pkey");
+
+            entity.ToTable("UserStateType");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Name).HasColumnType("character varying");
         });
 
         modelBuilder.Entity<UserType>(entity =>

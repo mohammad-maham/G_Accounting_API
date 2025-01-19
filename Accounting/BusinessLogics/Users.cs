@@ -182,7 +182,7 @@ namespace Accounting.BusinessLogics
 
             users = _accounting.UserInfos
                 .SelectMany(ui => _accounting.UserRoles.Where(x => x.UserId == ui.UserId), (ui, ur) => new { ui, ur })
-            .Where(x => x.ui.Status == 1 && new[] { 11, 12 }.Contains(x.ur.RoleId))
+            .Where(x => x.ui.Status == 1 && new long[] { 11, 12 }.Contains(x.ur.RoleId))
             .Select(x => new GetUsersVM() { UserId = x.ui.UserId, Username = $"{x.ui.FirstName} {x.ui.LastName}" })
             .ToList();
 
