@@ -15,6 +15,7 @@
         public string? Origin { get; set; }
         public string? ReferralCode { get; set; }
         public int UserType { get; set; }
+        public string? IP { get; set; }
     }
 
     public class GetUsersVM

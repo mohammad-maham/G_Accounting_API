@@ -235,7 +235,7 @@ namespace Accounting.Controllers
                     infoAuthVM.NationalCode = user.NationalCode.ToString();
 
                     LegalUserInfoAuthResult? authResult = _users.ValidateLegalUserInfo(infoAuthVM);
-                    bool isOk = authResult != null && authResult.Validation==true && authResult!.NationalId == user.NationalCode.ToString() && authResult!.Name == profile.Name;
+                    bool isOk = authResult != null && authResult.Validation == true && authResult!.NationalId == user.NationalCode.ToString() && authResult!.Name == profile.Name;
 
                     if (isOk)
                     {
@@ -399,7 +399,7 @@ namespace Accounting.Controllers
 
             if (isCompleteOk)
             {
-                token = _users.GetSignin(user.NationalCode.ToString()!, user.Password!);
+                token = _users.GetSignin(user.NationalCode.ToString()!, user.Password!, user.IP);
                 return Ok(new ApiResponse(data: token));
             }
             else if (isInquiery)
@@ -477,7 +477,7 @@ namespace Accounting.Controllers
                     bool isValid = _auth.VerifyOTP(findedUser!, user.OTP!.Value);
                     if (isValid)
                     {
-                        string token = _users.GetSignin(user.NationalCode.ToString()!);
+                        string token = _users.GetSignin(user.NationalCode.ToString()!, ip: user.IP);
 
                         if (!string.IsNullOrEmpty(user.Password))
                         {

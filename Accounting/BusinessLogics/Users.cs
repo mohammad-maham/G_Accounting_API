@@ -43,6 +43,7 @@ namespace Accounting.BusinessLogics
             User? user = null;
             bool isUsername = !NationalCodeValidator.IsValidNationalCode(username);
             password = SecurePasswordHasher.Hash(password);
+
             user = !isUsername
                 ? _accounting.Users.FirstOrDefault(x => x.NationalCode == long.Parse(username) && x.Password == password)
                 : _accounting.Users.FirstOrDefault(x => x.UserName == username && x.Password == password);
@@ -121,19 +122,62 @@ namespace Accounting.BusinessLogics
         }
 
         [Obsolete]
-        public string GetSignin(string username, string? password = "")
+        public string GetSignin(string username, string? password = "", string? ip = "")
         {
+            bool isFailed = false;
             User? user = new();
             string token = string.Empty;
 
-            if (!string.IsNullOrEmpty(password))
-                user = FindUser(username, password);
-            else
+            try
+            {
                 user = FindUser(username);
+                if (user != null && !string.IsNullOrEmpty(password))
+                {
+                    user = FindUser(username, password);
+                    isFailed = user == null || (user != null && user.UnlockDate != null && user.UnlockDate.Value.Date > DateTime.Now.Date);
+                }
 
-            if (user != null && user.NationalCode != 0 && new List<int> { 1, 2, 3 }.Contains(user.Status))
-                token = _auth.CreateToken(user);
+                var sessionInf = new
+                {
+                    UserLoginStatus = string.IsNullOrEmpty(token) ? "Success" : "Failed"
+                };
+                string jsonInfo = JsonConvert.SerializeObject(sessionInf);
 
+                UserSession session = new UserSession()
+                {
+                    SessionDate = DateTime.Now,
+                    Status = string.IsNullOrEmpty(token) ? 1 : -1,
+                    SessionInfo = jsonInfo,
+                    IP = ip,
+                    UserId = user!.Id
+                };
+
+                _accounting.UserSessions.Add(session);
+                _accounting.SaveChanges();
+
+                if (isFailed)
+                {
+                    (bool isBanned, int expireInterval) = this.CheckUserSessionBanState(user!.Id, ip);
+
+                    if (isBanned)
+                        user.UnlockDate = DateTime.Now.AddMinutes(expireInterval);
+                    else
+                        user.UnlockDate = null;
+
+                    _accounting.Entry<User>(user).State = EntityState.Modified;
+                    _accounting.SaveChanges();
+                }
+                else
+                {
+                    bool isValidUser = user != null && user.NationalCode != 0 && new List<int> { 1, 2, 3 }.Contains(user.Status);
+                    if (isValidUser)
+                        token = _auth.CreateToken(user!);
+                }
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
             return token;
         }
 
@@ -581,7 +625,7 @@ namespace Accounting.BusinessLogics
 
         public LegalUserInfoAuthResult? ValidateLegalUserInfo(LegalUserInfoAuthVM infoAuthVM)
         {
-            LegalUserInfoAuthResult? result =new();
+            LegalUserInfoAuthResult? result = new();
 
             IConfigurationRoot? config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -630,6 +674,36 @@ namespace Accounting.BusinessLogics
             {
                 return result;
             }
+        }
+
+        public (bool, int) CheckUserSessionBanState(long? userId = 0, string? ip = "")
+        {
+            int counter = 0;
+            int expireInterval = 0;
+            bool result = false;
+
+            if (userId == null || ip == null) return (false, 0);
+
+            List<UserSession>? sessions = _accounting.UserSessions
+                .Where(x => (x.UserId == userId.Value && userId > 0) || (x.IP == ip && string.IsNullOrEmpty(ip)))
+                .ToList();
+
+            for (int i = 0; i < counter; i++)
+            {
+                UserSession session = sessions[i];
+                bool failSt = session.SessionDate.Date == DateTime.Now.Date && session.Status == -1;
+                if (failSt) counter++;
+            }
+
+            result = counter >= 3;
+
+            if (counter >= 3) expireInterval = 10;
+            else if (counter >= 5) expireInterval = 30;
+            else if (counter >= 7) expireInterval = 60;
+            else if (counter >= 10) expireInterval = 120;
+            else expireInterval = 1440;
+
+            return (result, expireInterval);
         }
     }
 }

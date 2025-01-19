@@ -8,11 +8,13 @@ public partial class UserSession
 {
     public long Id { get; set; }
 
-    public long UserId { get; set; }
+    public long? UserId { get; set; }
 
     public DateTime SessionDate { get; set; }
 
     public string SessionInfo { get; set; } = null!;
 
-    public short Status { get; set; }
+    public int Status { get; set; }
+
+    public string? IP { get; set; }
 }

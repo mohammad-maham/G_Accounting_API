@@ -4,7 +4,7 @@ namespace Accounting.BusinessLogics.IBusinessLogics
 {
     public interface IUsers
     {
-        string GetSignin(string username, string? password = "");
+        string GetSignin(string username, string? password = "", string? ip = "");
         User? GetSignup(UserRequest userReq);
         bool IsExistUser(long nationalCode);
         User? FindUser(string username);
@@ -32,5 +32,6 @@ namespace Accounting.BusinessLogics.IBusinessLogics
         bool ValidateMobileNationalCode(string mobile, string nationalCode);
         bool ValidateRealUserInfo(RealUserInfoAuthVM infoAuthVM);
         LegalUserInfoAuthResult? ValidateLegalUserInfo(LegalUserInfoAuthVM infoAuthVM);
+        (bool, int) CheckUserSessionBanState(long? userId = 0, string? ip = "");
     }
 }
