@@ -486,8 +486,9 @@ namespace Accounting.BusinessLogics
                 .Build();
             string host = config.GetSection("ApiUrls").GetValue<string>("Gateway")!;
             short isActiveInqueries = config.GetValue<short>("ActiveInqueries");
-            /*if (isActiveInqueries == 1)
-            {*/
+
+            if (isActiveInqueries == 1)
+            {
                 try
                 {
                     // BaseURL
@@ -520,11 +521,11 @@ namespace Accounting.BusinessLogics
                     Console.WriteLine(e.Message);
                 }
                 return isOk;
-           /* }
+           }
             else
             {
                 return true;
-            }*/
+            }
         }
 
         public bool ValidateRealUserInfo(RealUserInfoAuthVM infoAuthVM)
@@ -536,6 +537,7 @@ namespace Accounting.BusinessLogics
                 .Build();
             string host = config.GetSection("ApiUrls").GetValue<string>("Gateway")!;
             short isActiveInqueries = config.GetValue<short>("ActiveInqueries");
+
             if (isActiveInqueries == 1)
             {
                 try
