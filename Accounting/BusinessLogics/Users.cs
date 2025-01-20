@@ -148,7 +148,7 @@ namespace Accounting.BusinessLogics
                     SessionDate = DateTime.Now,
                     Status = string.IsNullOrEmpty(token) ? 1 : -1,
                     SessionInfo = jsonInfo,
-                    IP = ip,
+                    Ip = ip,
                     UserId = user!.Id
                 };
 
@@ -685,7 +685,7 @@ namespace Accounting.BusinessLogics
             if (userId == null || ip == null) return (false, 0);
 
             List<UserSession>? sessions = _accounting.UserSessions
-                .Where(x => (x.UserId == userId.Value && userId > 0) || (x.IP == ip && string.IsNullOrEmpty(ip)))
+                .Where(x => (x.UserId == userId.Value && userId > 0) || (x.Ip == ip && string.IsNullOrEmpty(ip)))
                 .ToList();
 
             for (int i = 0; i < counter; i++)

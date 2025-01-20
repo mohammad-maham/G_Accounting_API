@@ -107,8 +107,6 @@ public partial class GAccountingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(500);
-            entity.Property(e => e.RegDate).HasColumnType("time without time zone");
-            entity.Property(e => e.RegistrationDate).HasColumnType("time without time zone");
         });
 
         modelBuilder.Entity<Menu>(entity =>
@@ -229,7 +227,6 @@ public partial class GAccountingDbContext : DbContext
                 .HasColumnName("OTPInfo");
             entity.Property(e => e.Password).HasMaxLength(100);
             entity.Property(e => e.ReferralCode).HasMaxLength(20);
-            entity.Property(e => e.UnlockDate).HasColumnType("time without time zone");
             entity.Property(e => e.UserName).HasMaxLength(50);
             entity.Property(e => e.UserType).HasDefaultValue((short)100);
         });
@@ -265,8 +262,12 @@ public partial class GAccountingDbContext : DbContext
             entity.ToTable("UserSession");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Ip)
+                .HasMaxLength(20)
+                .HasColumnName("IP");
             entity.Property(e => e.SessionInfo).HasColumnType("json");
-            entity.Property(e => e.Status).HasDefaultValue((short)0);
+            entity.Property(e => e.Status).HasDefaultValue(0);
+            entity.Property(e => e.UserId).HasDefaultValue(0L);
         });
 
         modelBuilder.Entity<UserState>(entity =>

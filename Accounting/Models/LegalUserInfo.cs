@@ -12,17 +12,17 @@ public partial class LegalUserInfo
 
     public short Status { get; set; }
 
-    public DateTime RegDate { get; set; }
-
     public string Name { get; set; } = null!;
-
-    public DateTime? RegistrationDate { get; set; }
 
     public decimal RegistrationNumber { get; set; }
 
     public int? RegistrationRegionId { get; set; }
 
-    public DateTime? LastModifyInfoDate { get; set; }
-
     public int AgentRole { get; set; }
+
+    public DateTime RegDate { get; set; }
+
+    public DateTime? RegistrationDate { get; set; }
+
+    public DateTime? LastModifyInfoDate { get; set; }
 }

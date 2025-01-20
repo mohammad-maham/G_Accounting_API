@@ -16,5 +16,5 @@ public partial class UserSession
 
     public int Status { get; set; }
 
-    public string? IP { get; set; }
+    public string? Ip { get; set; }
 }
