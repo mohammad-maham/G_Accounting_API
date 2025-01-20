@@ -388,7 +388,6 @@ namespace Accounting.Controllers
         public IActionResult Auth([FromBody] UsersVM user)
         {
             bool isOk = false;
-            bool isRegister = false;
             string token = string.Empty;
 
             bool isInquiery = user.NationalCode != null && user.NationalCode > 0
@@ -406,25 +405,7 @@ namespace Accounting.Controllers
             {
                 User? findedUser = _users.FindUser(user.NationalCode.ToString()!);
                 isOk = findedUser != null && findedUser.Id > 0;
-
-                if (isOk)
-                {
-                    findedUser!.Status = 11; // "Waiting Send OTP"
-                    _users.UpdateUser(findedUser);
-                }
-                else
-                {
-                    UserRequest request = new UserRequest() { NationalCode = user.NationalCode!.Value };
-                    User? newUser = _users.GetSignup(request);
-                    if (newUser != null)
-                    {
-                        findedUser!.Status = 11; // "Waiting Send OTP"
-                        _users.UpdateUser(findedUser);
-                        isRegister = true;
-                    }
-                }
-
-                return Ok(new ApiResponse(data: (!isOk && isRegister) || (isOk) ? "true" : "false", message: !isOk && isRegister ? "User Created Successfully" : "User Is Exist!"));
+                return Ok(new ApiResponse(isOk ? 200 : 404, data: isOk ? "exist" : "not_exists"));
             }
 
             return BadRequest(new ApiResponse(404));
@@ -434,22 +415,25 @@ namespace Accounting.Controllers
         [Route("[action]")]
         public IActionResult SendAuthOTP([FromBody] UsersVM user)
         {
+            bool isValidUserMobile = false;
+
             if (user.NationalCode is not null and > 0)
             {
                 User? findedUser = _users.FindUser(user.NationalCode.ToString()!);
-                bool isOk = findedUser != null && findedUser.Id > 0;
+                bool isExist = findedUser != null && findedUser.Id > 0;
 
-                if (isOk)
+                long? mobile = findedUser?.Mobile;
+
+                if ((mobile != null && mobile > 0) || (user.Mobile != null && user.Mobile > 0))
                 {
-                    long? mobile = findedUser!.Mobile;
+                    isValidUserMobile = _users.ValidateMobileNationalCode($"0{user.Mobile}", user.NationalCode!.ToString()!);
+                    mobile = isValidUserMobile ? user.Mobile : mobile;
+                }
 
-                    if ((mobile == null || mobile == 0) && user.Mobile != null && user.Mobile > 0)
-                    {
-                        bool isValidUser = _users.ValidateMobileNationalCode($"0{user.Mobile}", user.NationalCode!.ToString()!);
-                        mobile = isValidUser ? user.Mobile : mobile;
-                    }
 
-                    findedUser.Mobile = mobile;
+                if (isExist && isValidUserMobile)
+                {
+                    findedUser!.Mobile = mobile;
                     if (findedUser.Mobile is not null and > 0)
                     {
                         long otp = long.Parse(_auth.GenerateOTP(6));
@@ -457,6 +441,33 @@ namespace Accounting.Controllers
 
                         findedUser.Status = 12; // "Waiting Confirm OTP"
                         _users.UpdateUser(findedUser);
+                        return Ok(new ApiResponse(isExist ? 200 : 400, data: isExist ? "sended_otp" : "not_sended_otp"));
+                    }
+                }
+                else if (user.Mobile is not null and > 0 && isValidUserMobile)
+                {
+                    UserRequest request = new UserRequest() { NationalCode = user.NationalCode!.Value, Mobile = user.Mobile };
+                    User? newUser = _users.GetSignup(request);
+                    if (newUser != null)
+                    {
+                        newUser!.Status = 11; // "Waiting Send OTP"
+                        _users.UpdateUser(newUser);
+                        if (newUser.Mobile is not null and > 0)
+                        {
+                            long otp = long.Parse(_auth.GenerateOTP(6));
+                            _auth.SendOTP(newUser!, otp, user.Origin ?? "");
+
+                            newUser.Status = 12; // "Waiting Confirm OTP"
+                            _users.UpdateUser(newUser);
+                            return Ok(new ApiResponse(newUser != null ? 200 : 400, data: newUser != null ? "sended_otp" : "not_sended_otp"));
+                        }
+                    }
+                }
+                else
+                {
+                    if (!isValidUserMobile)
+                    {
+                        return BadRequest(new ApiResponse(400, data: "not_valid_user_mobile", message: "شماره تلفن کاربر با کد ملی آن مطابقت ندارد"));
                     }
                 }
             }
@@ -470,9 +481,9 @@ namespace Accounting.Controllers
             if (user.NationalCode != null && user.NationalCode > 0 && user.OTP > 0)
             {
                 User? findedUser = _users.FindUser(user.NationalCode.ToString()!);
-                bool isOk = findedUser != null && findedUser.Id > 0;
+                bool isExist = findedUser != null && findedUser.Id > 0;
 
-                if (isOk)
+                if (isExist)
                 {
                     bool isValid = _auth.VerifyOTP(findedUser!, user.OTP!.Value);
                     if (isValid)
@@ -494,11 +505,10 @@ namespace Accounting.Controllers
                                 _users.SetPassword(user.NationalCode.ToString()!, user.Password);
                                 findedUser.ReferralCode = user.ReferralCode;
                                 findedUser.IdentificationCode = idCode;
+                                return Ok(new ApiResponse(200, data: "setted_password"));
                             }
                             else
-                            {
                                 return BadRequest(new ApiResponse(504));
-                            }
                         }
 
                         findedUser!.Status = 1; // "ACTIVE"
@@ -507,9 +517,7 @@ namespace Accounting.Controllers
                         return Ok(new ApiResponse(data: token));
                     }
                     else
-                    {
                         return BadRequest(new ApiResponse(201));
-                    }
                 }
             }
             return BadRequest(new ApiResponse(404));
