@@ -1,6 +1,7 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
 using Google.Apis.Gmail.v1;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System.Net;
@@ -117,6 +118,16 @@ namespace Accounting.BusinessLogics
                     NotifUnit = 1,
                     RecieverUserId = sms.UserId
                 });
+
+                var x = JsonConvert.SerializeObject(new
+                {
+                    NotifTypes = 105,
+                    NotifBody = sms.Options!.Message,
+                    SenderUserId = 1,
+                    NotifUnit = 1,
+                    RecieverUserId = sms.UserId
+                });
+
 
                 // Headers
                 request.AddHeader("content-type", "application/json");

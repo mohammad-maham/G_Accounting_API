@@ -103,6 +103,20 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
+        //[Authorize]
+        [Route("[action]")]
+        public IActionResult GetUserInfoById([FromBody] User? user)
+        {
+            if (user != null && user.Id != 0)
+            {
+                User? userInfo = _users.FindUserById(user.Id);
+                string jsonData = JsonConvert.SerializeObject(userInfo);
+                return Ok(new ApiResponse(data: jsonData));
+            }
+            return BadRequest(new ApiResponse(404));
+        }
+
+        [HttpPost]
         [Route("[action]")]
         public IActionResult ForgotPassword([FromBody] UsersVM usersVM)
         {

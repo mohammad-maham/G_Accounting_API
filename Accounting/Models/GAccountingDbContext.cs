@@ -261,7 +261,8 @@ public partial class GAccountingDbContext : DbContext
 
             entity.ToTable("UserSession");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn()
+                .HasIdentityOptions(100000000L, 1, 100000000L, 1000000000000000000L, null, 30L);
             entity.Property(e => e.Ip)
                 .HasMaxLength(20)
                 .HasColumnName("IP");
