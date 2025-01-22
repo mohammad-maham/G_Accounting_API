@@ -444,7 +444,6 @@ namespace Accounting.Controllers
                     mobile = isValidUserMobile ? user.Mobile : mobile;
                 }
 
-
                 if (isExist && isValidUserMobile)
                 {
                     findedUser!.Mobile = mobile;
@@ -455,7 +454,7 @@ namespace Accounting.Controllers
 
                         findedUser.Status = 12; // "Waiting Confirm OTP"
                         _users.UpdateUser(findedUser);
-                        return Ok(new ApiResponse(isExist ? 200 : 400, data: isExist ? "sended_otp" : "not_sended_otp"));
+                        return Ok(new ApiResponse(isExist ? 200 : 400, data: isExist ? $"sended_otp:{findedUser.Mobile.ToString()!.Substring(findedUser.Mobile.ToString()!.Length - 4)}" : "not_sended_otp"));
                     }
                 }
                 else if (user.Mobile is not null and > 0 && isValidUserMobile)
@@ -473,7 +472,7 @@ namespace Accounting.Controllers
 
                             newUser.Status = 12; // "Waiting Confirm OTP"
                             _users.UpdateUser(newUser);
-                            return Ok(new ApiResponse(newUser != null ? 200 : 400, data: newUser != null ? "sended_otp" : "not_sended_otp"));
+                            return Ok(new ApiResponse(newUser != null ? 200 : 400, data: newUser != null ? $"sended_otp:{newUser.Mobile.ToString()!.Substring(newUser.Mobile.ToString()!.Length - 4)}" : "not_sended_otp"));
                         }
                     }
                 }
