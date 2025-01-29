@@ -25,6 +25,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public IActionResult SignIn([FromBody] UsersVM usersVM)
         {
             string token = string.Empty;
@@ -52,6 +53,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public IActionResult SignUp([FromBody] UserRequest user)
         {
             User? registeredUser = null;
@@ -89,7 +91,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult GetUserInfo([FromBody] User? user)
         {
@@ -103,7 +105,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult GetUserInfoById([FromBody] User? user)
         {
@@ -135,6 +137,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public IActionResult VerifyOTP([FromQuery] OTPVerify verify)
         {
             if (verify != null && verify.OTP != null && verify.OTP != 0 && !string.IsNullOrEmpty(verify.Username) && verify.Username != "0")
@@ -187,7 +190,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult UpdateUser([FromBody] User user)
         {
@@ -200,7 +203,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult CompleteRealProfile([FromBody] UserProfile profile)
         {
@@ -236,7 +239,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult CompleteLegalProfile([FromBody] LegalUserInfo profile)
         {
@@ -269,7 +272,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         //[UserInfo]
         [Route("[action]")]
         public IActionResult SubmitContact([FromBody] UserContact userContact)
@@ -291,6 +294,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
+        [ApiExplorerSettings(IgnoreApi = true)]
         public IActionResult SendOTP([FromBody] UsersVM usersVM)
         {
             if (usersVM.UserId != 0)
@@ -309,7 +313,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult SaveSessionInfo([FromBody] SessionInfo session)
         {
@@ -322,7 +326,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult UpdateUserStatus([FromBody] UsersVM usersVM)
         {
@@ -340,7 +344,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult GetUsers()
         {
@@ -355,7 +359,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult GetRoles()
         {
@@ -370,7 +374,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult GetStatuses()
         {
@@ -385,7 +389,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         [Route("[action]")]
         public IActionResult ChangeUserRole(UsersRoleVM userRole)
         {

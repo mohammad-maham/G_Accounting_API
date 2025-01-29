@@ -1,9 +1,9 @@
 using Accounting.BusinessLogics;
 using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Helpers;
-using Accounting.Middleware;
 using Accounting.Models;
 using Accounting.Services;
+using GoldHelpers.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

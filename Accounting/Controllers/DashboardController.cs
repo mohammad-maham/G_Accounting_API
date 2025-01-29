@@ -1,5 +1,6 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Errors;
+using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -22,6 +23,7 @@ namespace Accounting.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [Route("[action]")]
         public IActionResult GetDashboard(UsersVM user)
         {

@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Accounting.Controllers
 {
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     public class ReportsController : ControllerBase
     {
