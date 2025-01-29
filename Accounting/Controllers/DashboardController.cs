@@ -1,5 +1,5 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
-using Accounting.Errors;
+using GoldHelpers.Middleware;
 using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -34,10 +34,10 @@ namespace Accounting.Controllers
                 {
                     DashboardVM? dashboard = _dashboard.GetUserInfo(existUser.Id);
                     string jsonData = JsonConvert.SerializeObject(dashboard);
-                    return Ok(new ApiResponse(data: jsonData));
+                    return Ok(new APIResponse(data: jsonData));
                 }
             }
-            return BadRequest(new ApiResponse(404));
+            return BadRequest(new APIResponse(404));
         }
     }
 }

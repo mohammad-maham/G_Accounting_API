@@ -5,9 +5,12 @@ using Accounting.Models;
 using Accounting.Services;
 using GoldHelpers.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Net;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -96,8 +99,9 @@ options => options.UseNodaTime()));
         builder.Services.AddScoped<IDashboard, Dashboard>();
         builder.Services.AddScoped<IActivityDomain, ActivityDomain>();
         builder.Services.AddTransient<IAuthentication, AuthenticationService>();
+        builder.Services.AddTransient<ExceptionMiddleware>();
 
-        builder.Services.AddProblemDetails();
+        //builder.Services.AddProblemDetails();
         builder.Services.AddHttpContextAccessor();
 
         WebApplication app = builder.Build();

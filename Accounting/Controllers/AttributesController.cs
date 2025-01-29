@@ -1,5 +1,5 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
-using Accounting.Errors;
+using GoldHelpers.Middleware;
 using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -37,9 +37,9 @@ namespace Accounting.Controllers
                     bool isTokenValid = _auth.VerifyToken(attributes.Token, false);
                     isValid = user != null && user.Id != 0 && isTokenValid;
                 }
-                return isValid ? Ok(new ApiResponse(data: "true")) : BadRequest(new ApiResponse(401, data: "false"));
+                return isValid ? Ok(new APIResponse(data: "true")) : BadRequest(new APIResponse(401, data: "false"));
             }
-            return BadRequest(new ApiResponse(404, data: "false"));
+            return BadRequest(new APIResponse(404, data: "false"));
         }
 
         [HttpPost]
@@ -60,15 +60,15 @@ namespace Accounting.Controllers
                     if (isValid)
                     {
                         string jsonData = JsonConvert.SerializeObject(user);
-                        return Ok(new ApiResponse(data: jsonData));
+                        return Ok(new APIResponse(data: jsonData));
                     }
                     else
                     {
-                        return BadRequest(new ApiResponse(401));
+                        return BadRequest(new APIResponse(401));
                     }
                 }
             }
-            return BadRequest(new ApiResponse(404));
+            return BadRequest(new APIResponse(404));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Accounting.Errors;
+﻿using GoldHelpers.Middleware;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Accounting.Controllers
@@ -9,7 +9,7 @@ namespace Accounting.Controllers
     {
         public IActionResult Error(int code)
         {
-            return new ObjectResult(new ApiResponse(code));
+            return new ObjectResult(new APIResponse(code));
         }
     }
 }

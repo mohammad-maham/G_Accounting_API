@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <Reference Include="GoldHelpers">
-      <HintPath>..\..\G_Helper_LIB\bin\Release\net8.0\publish\GoldHelpers.dll</HintPath>
+      <HintPath>..\..\G_Helper_LIB\bin\Release\net8.0\GoldHelpers.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -33,10 +33,6 @@
     <Content Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Middleware\" />
   </ItemGroup>
 
 </Project>

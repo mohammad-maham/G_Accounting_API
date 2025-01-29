@@ -1,5 +1,5 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
-using Accounting.Errors;
+using GoldHelpers.Middleware;
 using Accounting.Helpers;
 using Accounting.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -29,9 +29,9 @@ namespace Accounting.Controllers
             if (region != null && region.Id != 0)
             {
                 string jsonData = JsonConvert.SerializeObject(region);
-                return Ok(new ApiResponse(data: jsonData));
+                return Ok(new APIResponse(data: jsonData));
             }
-            return BadRequest(new ApiResponse(400));
+            return BadRequest(new APIResponse(400));
         }
 
         [HttpPost]
@@ -42,9 +42,9 @@ namespace Accounting.Controllers
             if (regions != null && regions.Count > 0)
             {
                 string jsonData = JsonConvert.SerializeObject(regions);
-                return Ok(new ApiResponse(data: jsonData));
+                return Ok(new APIResponse(data: jsonData));
             }
-            return BadRequest(new ApiResponse(400));
+            return BadRequest(new APIResponse(400));
         }
     }
 }

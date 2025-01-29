@@ -1,5 +1,5 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
-using Accounting.Errors;
+using GoldHelpers.Middleware;
 using Accounting.Helpers;
 using Accounting.Models;
 using Accounting.Services;
@@ -509,10 +509,10 @@ namespace Accounting.BusinessLogics
                     RestResponse response = client.ExecutePost(request);
                     if (response != null && response.StatusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(response.Content))
                     {
-                        ApiResponse? apiResponse = JsonConvert.DeserializeObject<ApiResponse>(response.Content);
-                        if (apiResponse != null && !string.IsNullOrEmpty(apiResponse.Data))
+                        APIResponse? APIResponse = JsonConvert.DeserializeObject<APIResponse>(response.Content);
+                        if (APIResponse != null && !string.IsNullOrEmpty(APIResponse.Data))
                         {
-                            isOk = bool.Parse(apiResponse.Data);
+                            isOk = bool.Parse(APIResponse.Data);
                         }
                     }
                 }
@@ -560,10 +560,10 @@ namespace Accounting.BusinessLogics
                     RestResponse response = client.ExecutePost(request);
                     if (response != null && response.StatusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(response.Content))
                     {
-                        ApiResponse? apiResponse = JsonConvert.DeserializeObject<ApiResponse>(response.Content);
-                        if (apiResponse != null && !string.IsNullOrEmpty(apiResponse.Data))
+                        APIResponse? APIResponse = JsonConvert.DeserializeObject<APIResponse>(response.Content);
+                        if (APIResponse != null && !string.IsNullOrEmpty(APIResponse.Data))
                         {
-                            isOk = bool.Parse(apiResponse.Data);
+                            isOk = bool.Parse(APIResponse.Data);
                         }
                     }
                 }
@@ -659,10 +659,10 @@ namespace Accounting.BusinessLogics
                     RestResponse response = client.ExecutePost(request);
                     if (response != null && response.StatusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(response.Content))
                     {
-                        ApiResponse? apiResponse = JsonConvert.DeserializeObject<ApiResponse>(response.Content);
-                        if (apiResponse != null && !string.IsNullOrEmpty(apiResponse.Data))
+                        APIResponse? APIResponse = JsonConvert.DeserializeObject<APIResponse>(response.Content);
+                        if (APIResponse != null && !string.IsNullOrEmpty(APIResponse.Data))
                         {
-                            result = JsonConvert.DeserializeObject<LegalUserInfoAuthResult>(apiResponse.Data);
+                            result = JsonConvert.DeserializeObject<LegalUserInfoAuthResult>(APIResponse.Data);
                         }
                     }
                 }
