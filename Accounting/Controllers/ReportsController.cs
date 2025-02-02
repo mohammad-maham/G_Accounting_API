@@ -1,7 +1,7 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
-using GoldHelpers.Middleware;
 using Accounting.Helpers;
 using Accounting.Models;
+using GoldHelpers.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -33,10 +33,10 @@ namespace Accounting.Controllers
                 if (users != null && users.Count > 0)
                 {
                     jsonData = JsonConvert.SerializeObject(users);
-                    return Ok(new APIResponse(data: jsonData));
+                    return Ok(new GoldAPIResult(data: jsonData));
                 }
             }
-            return BadRequest(new APIResponse(404));
+            return BadRequest(new GoldAPIResult(404));
         }
     }
 }

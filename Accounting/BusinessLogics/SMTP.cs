@@ -1,5 +1,7 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Models;
+using GoldHelpers.Helpers;
+using GoldHelpers.Models;
 using Google.Apis.Gmail.v1;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -92,49 +94,16 @@ namespace Accounting.BusinessLogics
 
         public void SendGoldOTPSMS(SMSModel sms)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build()
-                .GetSection("ApiUrls");
-
-            string host = config.GetValue<string>("CustomerCommunication")!;
-
             try
             {
-                // BaseURL
-                RestClient client = new($"{host}/api/Communications/SendNotification");
-                RestRequest request = new()
-                {
-                    Method = Method.Post
-                };
-
-                // Parameters
-                request.AddJsonBody(new
+                GoldAPIResult? result = new GoldAPIResponse(GoldHosts.Communication, "/api/Communications/SendNotification", new
                 {
                     NotifTypes = 105,
                     NotifBody = sms.Options!.Message,
                     SenderUserId = 1,
                     NotifUnit = 1,
                     RecieverUserId = sms.UserId
-                });
-
-                var x = JsonConvert.SerializeObject(new
-                {
-                    NotifTypes = 105,
-                    NotifBody = sms.Options!.Message,
-                    SenderUserId = 1,
-                    NotifUnit = 1,
-                    RecieverUserId = sms.UserId
-                });
-
-
-                // Headers
-                request.AddHeader("content-type", "application/json");
-                request.AddHeader("cache-control", "no-cache");
-
-                // Send SMS
-                RestResponse response = client.ExecutePost(request);
+                }).Post();
             }
             catch (Exception e)
             {

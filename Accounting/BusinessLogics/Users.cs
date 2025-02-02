@@ -1,8 +1,9 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
-using GoldHelpers.Middleware;
 using Accounting.Helpers;
 using Accounting.Models;
 using Accounting.Services;
+using GoldHelpers.Helpers;
+using GoldHelpers.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using RestSharp;
@@ -484,37 +485,19 @@ namespace Accounting.BusinessLogics
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
-            string host = config.GetSection("ApiUrls").GetValue<string>("Gateway")!;
             short isActiveInqueries = config.GetValue<short>("ActiveInqueries");
 
             if (isActiveInqueries == 1)
             {
                 try
                 {
-                    // BaseURL
-                    RestClient client = new($"{host}/api/Authorization/GetValidateMobileNationalCode");
-                    RestRequest request = new()
+                    GoldAPIResult? result = new GoldAPIResponse(GoldHosts.Gateway, "/api/Authorization/GetValidateMobileNationalCode", new
                     {
-                        Method = Method.Post
-                    };
+                        Mobile = mobile,
+                        NationalCode = nationalCode
+                    }).Post();
 
-                    // Parameters
-                    request.AddJsonBody(new { Mobile = mobile, NationalCode = nationalCode });
-
-                    // Headers
-                    request.AddHeader("content-type", "application/json");
-                    request.AddHeader("cache-control", "no-cache");
-
-                    // Send SMS
-                    RestResponse response = client.ExecutePost(request);
-                    if (response != null && response.StatusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(response.Content))
-                    {
-                        APIResponse? APIResponse = JsonConvert.DeserializeObject<APIResponse>(response.Content);
-                        if (APIResponse != null && !string.IsNullOrEmpty(APIResponse.Data))
-                        {
-                            isOk = bool.Parse(APIResponse.Data);
-                        }
-                    }
+                    isOk = result != null && !string.IsNullOrEmpty(result.Data) && bool.Parse(result.Data);
                 }
                 catch (Exception e)
                 {
@@ -523,9 +506,7 @@ namespace Accounting.BusinessLogics
                 return isOk;
             }
             else
-            {
                 return true;
-            }
         }
 
         public bool ValidateRealUserInfo(RealUserInfoAuthVM infoAuthVM)
@@ -535,37 +516,14 @@ namespace Accounting.BusinessLogics
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
-            string host = config.GetSection("ApiUrls").GetValue<string>("Gateway")!;
             short isActiveInqueries = config.GetValue<short>("ActiveInqueries");
 
             if (isActiveInqueries == 1)
             {
                 try
                 {
-                    // BaseURL
-                    RestClient client = new($"{host}/api/Authorization/GetValidateRealUserInfo");
-                    RestRequest request = new()
-                    {
-                        Method = Method.Post
-                    };
-
-                    // Parameters
-                    request.AddJsonBody(infoAuthVM);
-
-                    // Headers
-                    request.AddHeader("content-type", "application/json");
-                    request.AddHeader("cache-control", "no-cache");
-
-                    // Send SMS
-                    RestResponse response = client.ExecutePost(request);
-                    if (response != null && response.StatusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(response.Content))
-                    {
-                        APIResponse? APIResponse = JsonConvert.DeserializeObject<APIResponse>(response.Content);
-                        if (APIResponse != null && !string.IsNullOrEmpty(APIResponse.Data))
-                        {
-                            isOk = bool.Parse(APIResponse.Data);
-                        }
-                    }
+                    GoldAPIResult? result = new GoldAPIResponse(GoldHosts.Gateway, "/api/Authorization/GetValidateRealUserInfo", infoAuthVM).Post();
+                    isOk = result != null && !string.IsNullOrEmpty(result.Data) && bool.Parse(result.Data);
                 }
                 catch (Exception e)
                 {
@@ -574,9 +532,7 @@ namespace Accounting.BusinessLogics
                 return isOk;
             }
             else
-            {
                 return true;
-            }
         }
 
         public LegalUserInfo InsertLegalUserInfo(LegalUserInfo profile)
@@ -627,55 +583,32 @@ namespace Accounting.BusinessLogics
 
         public LegalUserInfoAuthResult? ValidateLegalUserInfo(LegalUserInfoAuthVM infoAuthVM)
         {
-            LegalUserInfoAuthResult? result = new();
+            LegalUserInfoAuthResult? model = new();
 
             IConfigurationRoot? config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            string host = config.GetSection("ApiUrls").GetValue<string>("Gateway")!;
             short isActiveInqueries = config.GetValue<short>("ActiveInqueries");
 
             if (isActiveInqueries == 1)
             {
                 try
                 {
-                    // BaseURL
-                    RestClient client = new($"{host}/api/Authorization/GetValidateLegalUserInfo");
-                    RestRequest request = new()
-                    {
-                        Method = Method.Post
-                    };
+                    GoldAPIResult? result = new GoldAPIResponse(GoldHosts.Gateway, "/api/Authorization/GetValidateLegalUserInfo", infoAuthVM).Post();
 
-                    // Parameters
-                    request.AddJsonBody(infoAuthVM);
-
-                    // Headers
-                    request.AddHeader("content-type", "application/json");
-                    request.AddHeader("cache-control", "no-cache");
-
-                    // Send SMS
-                    RestResponse response = client.ExecutePost(request);
-                    if (response != null && response.StatusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(response.Content))
-                    {
-                        APIResponse? APIResponse = JsonConvert.DeserializeObject<APIResponse>(response.Content);
-                        if (APIResponse != null && !string.IsNullOrEmpty(APIResponse.Data))
-                        {
-                            result = JsonConvert.DeserializeObject<LegalUserInfoAuthResult>(APIResponse.Data);
-                        }
-                    }
+                    if (result != null && !string.IsNullOrEmpty(result.Data))
+                        model = JsonConvert.DeserializeObject<LegalUserInfoAuthResult>(result.Data);
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
                 }
-                return result;
+                return model;
             }
             else
-            {
-                return result;
-            }
+                return model;
         }
 
         public (bool, int) CheckUserSessionBanState(long? userId = 0, string? ip = "")

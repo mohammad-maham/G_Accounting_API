@@ -1,7 +1,7 @@
 ﻿using Accounting.BusinessLogics.IBusinessLogics;
-using GoldHelpers.Middleware;
 using Accounting.Helpers;
 using Accounting.Models;
+using GoldHelpers.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -37,9 +37,9 @@ namespace Accounting.Controllers
                     bool isTokenValid = _auth.VerifyToken(attributes.Token, false);
                     isValid = user != null && user.Id != 0 && isTokenValid;
                 }
-                return isValid ? Ok(new APIResponse(data: "true")) : BadRequest(new APIResponse(401, data: "false"));
+                return isValid ? Ok(new GoldAPIResult(data: "true")) : BadRequest(new GoldAPIResult(401, data: "false"));
             }
-            return BadRequest(new APIResponse(404, data: "false"));
+            return BadRequest(new GoldAPIResult(404, data: "false"));
         }
 
         [HttpPost]
@@ -60,15 +60,15 @@ namespace Accounting.Controllers
                     if (isValid)
                     {
                         string jsonData = JsonConvert.SerializeObject(user);
-                        return Ok(new APIResponse(data: jsonData));
+                        return Ok(new GoldAPIResult(data: jsonData));
                     }
                     else
                     {
-                        return BadRequest(new APIResponse(401));
+                        return BadRequest(new GoldAPIResult(401));
                     }
                 }
             }
-            return BadRequest(new APIResponse(404));
+            return BadRequest(new GoldAPIResult(404));
         }
     }
 }
