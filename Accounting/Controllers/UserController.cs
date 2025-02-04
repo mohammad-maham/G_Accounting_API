@@ -1,12 +1,10 @@
-﻿using Accounting.BusinessLogics;
-using Accounting.BusinessLogics.IBusinessLogics;
+﻿using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Helpers;
 using Accounting.Models;
+using GoldHelpers.Helpers;
 using GoldHelpers.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Data;
-using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 
 namespace Accounting.Controllers
@@ -72,7 +70,7 @@ namespace Accounting.Controllers
                         _users.UpdateUser(registeredUser);
                         long otp = long.Parse(_auth.GenerateOTP(6));
                         _auth.SendOTP(registeredUser, otp, "Register Verfication", true);
-                        User userResponse = new User()
+                        User userResponse = new()
                         {
                             Id = registeredUser.Id,
                             Email = registeredUser.Email,
@@ -406,6 +404,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
+        [GoldServiceAuthorize]
         public IActionResult Auth([FromBody] UsersVM user)
         {
             bool isOk = false;
@@ -434,6 +433,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
+        [GoldServiceAuthorize]
         public IActionResult SendAuthOTP([FromBody] UsersVM user)
         {
             bool isValidUserMobile = false;
@@ -461,12 +461,12 @@ namespace Accounting.Controllers
 
                         findedUser.Status = 12; // "Waiting Confirm OTP"
                         _users.UpdateUser(findedUser);
-                        return Ok(new GApiResponse<string>() { StatusCode = isExist ? 200 : 400, Data = isExist ? $"sended_otp:{findedUser.Mobile.ToString()!.Substring(findedUser.Mobile.ToString()!.Length - 4)}" : "not_sended_otp" });
+                        return Ok(new GApiResponse<string>() { StatusCode = isExist ? 200 : 400, Data = isExist ? $"sended_otp:{findedUser.Mobile.ToString()![^4..]}" : "not_sended_otp" });
                     }
                 }
                 else if (user.Mobile is not null and > 0 && isValidUserMobile)
                 {
-                    UserRequest request = new UserRequest() { NationalCode = user.NationalCode!.Value, Mobile = user.Mobile };
+                    UserRequest request = new() { NationalCode = user.NationalCode!.Value, Mobile = user.Mobile };
                     User? newUser = _users.GetSignup(request);
                     if (newUser != null)
                     {
@@ -479,7 +479,7 @@ namespace Accounting.Controllers
 
                             newUser.Status = 12; // "Waiting Confirm OTP"
                             _users.UpdateUser(newUser);
-                            return Ok(new GApiResponse<string>() { StatusCode = newUser != null ? 200 : 400, Data = newUser != null ? $"sended_otp:{newUser.Mobile.ToString()!.Substring(newUser.Mobile.ToString()!.Length - 4)}" : "not_sended_otp" });
+                            return Ok(new GApiResponse<string>() { StatusCode = newUser != null ? 200 : 400, Data = newUser != null ? $"sended_otp:{newUser.Mobile.ToString()![^4..]}" : "not_sended_otp" });
                         }
                     }
                 }
@@ -496,6 +496,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
+        [GoldServiceAuthorize]
         public IActionResult VerifyAuthOTP([FromBody] UsersVM user)
         {
             if (user.NationalCode != null && user.NationalCode > 0 && user.OTP > 0)
@@ -528,7 +529,9 @@ namespace Accounting.Controllers
                                 return Ok(new GApiResponse<string>() { StatusCode = 200, Data = "setted_password" });
                             }
                             else
+                            {
                                 return BadRequest(new GApiResponse<string>() { StatusCode = 504 });
+                            }
                         }
 
                         findedUser!.Status = 1; // "ACTIVE"
@@ -537,7 +540,9 @@ namespace Accounting.Controllers
                         return Ok(new GApiResponse<string>() { Data = token });
                     }
                     else
+                    {
                         return BadRequest(new GApiResponse<string>() { StatusCode = 201 });
+                    }
                 }
             }
             return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
