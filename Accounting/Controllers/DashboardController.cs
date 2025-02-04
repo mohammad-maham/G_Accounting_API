@@ -34,10 +34,10 @@ namespace Accounting.Controllers
                 {
                     DashboardVM? dashboard = _dashboard.GetUserInfo(existUser.Id);
                     string jsonData = JsonConvert.SerializeObject(dashboard);
-                    return Ok(new GoldAPIResult(data: jsonData));
+                    return Ok(new GApiResponse<DashboardVM>() { Data = dashboard });
                 }
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
     }
 }

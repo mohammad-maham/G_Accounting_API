@@ -6,9 +6,11 @@ using GoldHelpers.Helpers;
 using GoldHelpers.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.Ocsp;
 using RestSharp;
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 namespace Accounting.BusinessLogics
 {
     public class Users : IUsers
@@ -16,15 +18,18 @@ namespace Accounting.BusinessLogics
         private readonly ILogger<Users>? _logger;
         private readonly GAccountingDbContext _accounting;
         private readonly IAuthentication _auth;
+        //private readonly IHttpContextAccessor _contextAccessor;
 
         public Users()
         {
+           // _contextAccessor = new HttpContextAccessor();
             _accounting = new GAccountingDbContext();
             _auth = new AuthenticationService();
         }
 
-        public Users(GAccountingDbContext accounting, ILogger<Users> logger, IAuthentication auth)
+        public Users(GAccountingDbContext accounting, ILogger<Users> logger, IAuthentication auth/*, IHttpContextAccessor contextAccessor*/)
         {
+            //_contextAccessor = contextAccessor;
             _accounting = accounting;
             _logger = logger;
             _auth = auth;

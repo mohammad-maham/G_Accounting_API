@@ -29,9 +29,9 @@ namespace Accounting.Controllers
             if (region != null && region.Id != 0)
             {
                 string jsonData = JsonConvert.SerializeObject(region);
-                return Ok(new GoldAPIResult(data: jsonData));
+                return Ok(new GApiResponse<Region>() { Data = region });
             }
-            return BadRequest(new GoldAPIResult(400));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 400 });
         }
 
         [HttpPost]
@@ -42,9 +42,9 @@ namespace Accounting.Controllers
             if (regions != null && regions.Count > 0)
             {
                 string jsonData = JsonConvert.SerializeObject(regions);
-                return Ok(new GoldAPIResult(data: jsonData));
+                return Ok(new GApiResponse<List<Region>>() { Data = regions });
             }
-            return BadRequest(new GoldAPIResult(400));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 400 });
         }
     }
 }

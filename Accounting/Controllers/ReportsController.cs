@@ -33,10 +33,10 @@ namespace Accounting.Controllers
                 if (users != null && users.Count > 0)
                 {
                     jsonData = JsonConvert.SerializeObject(users);
-                    return Ok(new GoldAPIResult(data: jsonData));
+                    return Ok(new GApiResponse<List<UsersList>>() { Data = users });
                 }
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
     }
 }

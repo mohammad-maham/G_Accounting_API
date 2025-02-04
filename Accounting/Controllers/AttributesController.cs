@@ -37,9 +37,9 @@ namespace Accounting.Controllers
                     bool isTokenValid = _auth.VerifyToken(attributes.Token, false);
                     isValid = user != null && user.Id != 0 && isTokenValid;
                 }
-                return isValid ? Ok(new GoldAPIResult(data: "true")) : BadRequest(new GoldAPIResult(401, data: "false"));
+                return isValid ? Ok(new GApiResponse<string>() { Data = "true" }) : BadRequest(new GApiResponse<string>() { Data = "false", StatusCode = 401 });
             }
-            return BadRequest(new GoldAPIResult(404, data: "false"));
+            return BadRequest(new GApiResponse<string>() { Data = "false", StatusCode = 404 });
         }
 
         [HttpPost]
@@ -60,15 +60,15 @@ namespace Accounting.Controllers
                     if (isValid)
                     {
                         string jsonData = JsonConvert.SerializeObject(user);
-                        return Ok(new GoldAPIResult(data: jsonData));
+                        return Ok(new GApiResponse<User>() { Data = user });
                     }
                     else
                     {
-                        return BadRequest(new GoldAPIResult(401));
+                        return BadRequest(new GApiResponse<string>() { StatusCode = 401 });
                     }
                 }
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
     }
 }

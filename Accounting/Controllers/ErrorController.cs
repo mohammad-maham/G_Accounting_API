@@ -9,7 +9,7 @@ namespace Accounting.Controllers
     {
         public IActionResult Error(int code)
         {
-            return new ObjectResult(new GoldAPIResult(code));
+            return new ObjectResult(new GApiResponse<string>() { StatusCode = code });
         }
     }
 }

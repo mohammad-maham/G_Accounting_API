@@ -1,9 +1,12 @@
-﻿using Accounting.BusinessLogics.IBusinessLogics;
+﻿using Accounting.BusinessLogics;
+using Accounting.BusinessLogics.IBusinessLogics;
 using Accounting.Helpers;
 using Accounting.Models;
 using GoldHelpers.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Data;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 
 namespace Accounting.Controllers
@@ -40,15 +43,15 @@ namespace Accounting.Controllers
                     {
                         /*long otp = long.Parse(_auth.GenerateOTP(6));
                         await _auth.SendOTPAsync(user, otp, "Login Verfication", true);*/
-                        return Ok(new GoldAPIResult(data: token));
+                        return Ok(new GApiResponse<string>() { Data = token });
                     }
                 }
                 else
                 {
-                    return BadRequest(new GoldAPIResult(503));
+                    return BadRequest(new GApiResponse<string>() { StatusCode = 503 });
                 }
             }
-            return BadRequest(new GoldAPIResult(503));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 503 });
         }
 
         [HttpPost]
@@ -69,25 +72,25 @@ namespace Accounting.Controllers
                         _users.UpdateUser(registeredUser);
                         long otp = long.Parse(_auth.GenerateOTP(6));
                         _auth.SendOTP(registeredUser, otp, "Register Verfication", true);
-                        string? jsonData = JsonConvert.SerializeObject(new User()
+                        User userResponse = new User()
                         {
                             Id = registeredUser.Id,
                             Email = registeredUser.Email,
                             Mobile = registeredUser.Mobile,
                             NationalCode = registeredUser.NationalCode,
                             UserName = registeredUser.UserName
-                        });
+                        };
                         registeredUser.Status = 12; // "Waiting Confirm OTP"
                         _users.UpdateUser(registeredUser);
-                        return Ok(new GoldAPIResult(data: jsonData));
+                        return Ok(new GApiResponse<User>() { Data = userResponse });
                     }
                 }
                 else
                 {
-                    return BadRequest(new GoldAPIResult(502, "کد ملی با شماره همراه مطابقت ندارد"));
+                    return BadRequest(new GApiResponse<string>() { StatusCode = 502, Message = "کد ملی با شماره همراه مطابقت ندارد" });
                 }
             }
-            return BadRequest(new GoldAPIResult(502, "با کدملی وارد شده، قبلا کاربری ثبت نام کرده است!"));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 502, Message = "با کدملی وارد شده، قبلا کاربری ثبت نام کرده است!" });
         }
 
         [HttpPost]
@@ -99,9 +102,9 @@ namespace Accounting.Controllers
             {
                 UserInfoVM? userInfo = _users.FindFullUserInfo(user.Id);
                 string jsonData = JsonConvert.SerializeObject(userInfo);
-                return Ok(new GoldAPIResult(data: jsonData));
+                return Ok(new GApiResponse<UserInfoVM?>() { Data = userInfo });
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -113,9 +116,9 @@ namespace Accounting.Controllers
             {
                 User? userInfo = _users.FindUserById(user.Id);
                 string jsonData = JsonConvert.SerializeObject(userInfo);
-                return Ok(new GoldAPIResult(data: jsonData));
+                return Ok(new GApiResponse<User?>() { Data = userInfo });
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -129,10 +132,10 @@ namespace Accounting.Controllers
                 {
                     long otp = long.Parse(_auth.GenerateOTP(6));
                     _auth.SendOTP(user, otp, "Forgot Password Verfication", true);
-                    return Ok(new GoldAPIResult());
+                    return Ok(new GApiResponse<string>());
                 }
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -150,15 +153,15 @@ namespace Accounting.Controllers
                     {
                         user.Status = 1; // "ACTIVE"
                         _users.UpdateUser(user);
-                        return Ok(new GoldAPIResult());
+                        return Ok(new GApiResponse<string>());
                     }
                     else
                     {
-                        return BadRequest(new GoldAPIResult(201));
+                        return BadRequest(new GApiResponse<string>() { StatusCode = 201 });
                     }
                 }
             }
-            return BadRequest(new GoldAPIResult(401));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 401 });
         }
 
         [HttpPost]
@@ -178,15 +181,15 @@ namespace Accounting.Controllers
                         _users.SetPassword(newPassword.NationalCode.ToString(), newPassword.Password);
                         user.Status = 1; // "ACTIVATE"
                         _users.UpdateUser(user);
-                        return Ok(new GoldAPIResult());
+                        return Ok(new GApiResponse<string>());
                     }
                     else
                     {
-                        return BadRequest(new GoldAPIResult(404, message: "کد تائید صحیح نمی باشد"));
+                        return BadRequest(new GApiResponse<string>() { StatusCode = 404, Message = "کد تائید صحیح نمی باشد" });
                     }
                 }
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -197,9 +200,9 @@ namespace Accounting.Controllers
             if (user != null && user.Id != 0)
             {
                 _users.UpdateUser(user);
-                return Ok(new GoldAPIResult());
+                return Ok(new GApiResponse<string>());
             }
-            return BadRequest(new GoldAPIResult(500));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 500 });
         }
 
         [HttpPost]
@@ -227,15 +230,15 @@ namespace Accounting.Controllers
                         user.Status = 2; // "COMPLETE-PROFILE"
                         _users.UpdateUser(user);
                         string? jsonData = JsonConvert.SerializeObject(userInfo);
-                        return Ok(new GoldAPIResult(data: jsonData));
+                        return Ok(new GApiResponse<UserInfo>() { Data = userInfo });
                     }
                     else
                     {
-                        return BadRequest(new GoldAPIResult(400, message: "اطلاعات هویتی مطابقت ندارد!"));
+                        return BadRequest(new GApiResponse<string>() { StatusCode = 400, Message = "اطلاعات هویتی مطابقت ندارد!" });
                     }
                 }
             }
-            return BadRequest(new GoldAPIResult(500));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 500 });
         }
 
         [HttpPost]
@@ -260,15 +263,15 @@ namespace Accounting.Controllers
                         user.Status = 2; // "COMPLETE-PROFILE"
                         _users.UpdateUser(user);
                         string? jsonData = JsonConvert.SerializeObject(userInfo);
-                        return Ok(new GoldAPIResult(data: jsonData));
+                        return Ok(new GApiResponse<LegalUserInfo>() { Data = userInfo });
                     }
                     else
                     {
-                        return BadRequest(new GoldAPIResult(400, message: "اطلاعات هویتی مطابقت ندارد!"));
+                        return BadRequest(new GApiResponse<string>() { StatusCode = 400, Message = "اطلاعات هویتی مطابقت ندارد!" });
                     }
                 }
             }
-            return BadRequest(new GoldAPIResult(500));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 500 });
         }
 
         [HttpPost]
@@ -286,10 +289,10 @@ namespace Accounting.Controllers
                     user.Status = 3; // "SUBMIT-CONTACT"
                     _users.UpdateUser(user);
                     string? jsonData = JsonConvert.SerializeObject(contact);
-                    return Ok(new GoldAPIResult(data: jsonData));
+                    return Ok(new GApiResponse<Contact>() { Data = contact });
                 }
             }
-            return Ok(new GoldAPIResult());
+            return BadRequest(new GApiResponse<string>() { StatusCode = 500 });
         }
 
         [HttpPost]
@@ -306,10 +309,10 @@ namespace Accounting.Controllers
                     _auth.SendOTP(user, otp, "Verfication Code", true);
                     user.Status = 12; // "Waiting Confirm OTP"
                     _users.UpdateUser(user);
-                    return Ok(new GoldAPIResult());
+                    return Ok(new GApiResponse<string>());
                 }
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -320,9 +323,9 @@ namespace Accounting.Controllers
             if (session != null && session.UserId != 0)
             {
                 _users.SaveUserSessionInfo(session);
-                return Ok(new GoldAPIResult());
+                return Ok(new GApiResponse<string>());
             }
-            return BadRequest(new GoldAPIResult(500));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -337,10 +340,10 @@ namespace Accounting.Controllers
                 {
                     user.Status = usersVM.Status!.Value;
                     _users.UpdateUser(user);
-                    return Ok(new GoldAPIResult());
+                    return Ok(new GApiResponse<string>());
                 }
             }
-            return BadRequest(new GoldAPIResult(500));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -353,9 +356,9 @@ namespace Accounting.Controllers
             if (users != null && users.Count > 0)
             {
                 string jsonData = JsonConvert.SerializeObject(users);
-                return Ok(new GoldAPIResult(data: jsonData));
+                return Ok(new GApiResponse<List<GetUsersVM>>() { Data = users });
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -368,9 +371,9 @@ namespace Accounting.Controllers
             if (roles != null && roles.Count > 0)
             {
                 string jsonData = JsonConvert.SerializeObject(roles);
-                return Ok(new GoldAPIResult(data: jsonData));
+                return Ok(new GApiResponse<List<Role>>() { Data = roles });
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -383,9 +386,9 @@ namespace Accounting.Controllers
             if (statuses != null && statuses.Count > 0)
             {
                 string jsonData = JsonConvert.SerializeObject(statuses);
-                return Ok(new GoldAPIResult(data: jsonData));
+                return Ok(new GApiResponse<List<Status>>() { Data = statuses });
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -396,9 +399,9 @@ namespace Accounting.Controllers
             if (userRole != null && userRole.UserId != null && userRole.UserId != 0 && userRole.RoleId != null && userRole.UserId != 0)
             {
                 _users.ChangeUserRole(userRole);
-                return Ok(new GoldAPIResult());
+                return Ok(new GApiResponse<string>());
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -417,16 +420,16 @@ namespace Accounting.Controllers
             if (isCompleteOk)
             {
                 token = _users.GetSignin(user.NationalCode.ToString()!, user.Password!, user.IP);
-                return Ok(new GoldAPIResult(data: token));
+                return Ok(new GApiResponse<string>() { Data = token });
             }
             else if (isInquiery)
             {
                 User? findedUser = _users.FindUser(user.NationalCode.ToString()!);
                 isOk = findedUser != null && findedUser.Id > 0;
-                return Ok(new GoldAPIResult(isOk ? 200 : 404, data: isOk ? "exist" : "not_exists"));
+                return Ok(new GApiResponse<string>() { StatusCode = isOk ? 200 : 404, Data = isOk ? "exist" : "not_exists" });
             }
 
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -458,7 +461,7 @@ namespace Accounting.Controllers
 
                         findedUser.Status = 12; // "Waiting Confirm OTP"
                         _users.UpdateUser(findedUser);
-                        return Ok(new GoldAPIResult(isExist ? 200 : 400, data: isExist ? $"sended_otp:{findedUser.Mobile.ToString()!.Substring(findedUser.Mobile.ToString()!.Length - 4)}" : "not_sended_otp"));
+                        return Ok(new GApiResponse<string>() { StatusCode = isExist ? 200 : 400, Data = isExist ? $"sended_otp:{findedUser.Mobile.ToString()!.Substring(findedUser.Mobile.ToString()!.Length - 4)}" : "not_sended_otp" });
                     }
                 }
                 else if (user.Mobile is not null and > 0 && isValidUserMobile)
@@ -476,7 +479,7 @@ namespace Accounting.Controllers
 
                             newUser.Status = 12; // "Waiting Confirm OTP"
                             _users.UpdateUser(newUser);
-                            return Ok(new GoldAPIResult(newUser != null ? 200 : 400, data: newUser != null ? $"sended_otp:{newUser.Mobile.ToString()!.Substring(newUser.Mobile.ToString()!.Length - 4)}" : "not_sended_otp"));
+                            return Ok(new GApiResponse<string>() { StatusCode = newUser != null ? 200 : 400, Data = newUser != null ? $"sended_otp:{newUser.Mobile.ToString()!.Substring(newUser.Mobile.ToString()!.Length - 4)}" : "not_sended_otp" });
                         }
                     }
                 }
@@ -484,11 +487,11 @@ namespace Accounting.Controllers
                 {
                     if (!isValidUserMobile)
                     {
-                        return BadRequest(new GoldAPIResult(400, data: "not_valid_user_mobile", message: "شماره تلفن کاربر با کد ملی آن مطابقت ندارد"));
+                        return BadRequest(new GApiResponse<string>() { StatusCode = 400, Data = "not_valid_user_mobile", Message = "شماره تلفن کاربر با کد ملی آن مطابقت ندارد" });
                     }
                 }
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
 
         [HttpPost]
@@ -522,22 +525,22 @@ namespace Accounting.Controllers
                                 _users.SetPassword(user.NationalCode.ToString()!, user.Password);
                                 findedUser.ReferralCode = user.ReferralCode;
                                 findedUser.IdentificationCode = idCode;
-                                return Ok(new GoldAPIResult(200, data: "setted_password"));
+                                return Ok(new GApiResponse<string>() { StatusCode = 200, Data = "setted_password" });
                             }
                             else
-                                return BadRequest(new GoldAPIResult(504));
+                                return BadRequest(new GApiResponse<string>() { StatusCode = 504 });
                         }
 
                         findedUser!.Status = 1; // "ACTIVE"
                         _users.UpdateUser(findedUser!);
 
-                        return Ok(new GoldAPIResult(data: token));
+                        return Ok(new GApiResponse<string>() { Data = token });
                     }
                     else
-                        return BadRequest(new GoldAPIResult(201));
+                        return BadRequest(new GApiResponse<string>() { StatusCode = 201 });
                 }
             }
-            return BadRequest(new GoldAPIResult(404));
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
     }
 }
