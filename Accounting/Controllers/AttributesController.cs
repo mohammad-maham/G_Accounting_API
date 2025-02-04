@@ -70,5 +70,19 @@ namespace Accounting.Controllers
             }
             return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
         }
+
+        [HttpPost]
+        //[Authorize]
+        [Route("[action]")]
+        public IActionResult GetUserInfoById([FromBody] User? user)
+        {
+            if (user != null && user.Id != 0)
+            {
+                User? userInfo = _users.FindUserById(user.Id);
+                string jsonData = JsonConvert.SerializeObject(userInfo);
+                return Ok(new GApiResponse<User?>() { Data = userInfo });
+            }
+            return BadRequest(new GApiResponse<string>() { StatusCode = 404 });
+        }
     }
 }

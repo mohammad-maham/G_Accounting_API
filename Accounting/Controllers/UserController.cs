@@ -404,7 +404,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        [GoldServiceAuthorize]
+        //[GoldServiceAuthorize]
         public IActionResult Auth([FromBody] UsersVM user)
         {
             bool isOk = false;
@@ -433,7 +433,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        [GoldServiceAuthorize]
+        //[GoldServiceAuthorize]
         public IActionResult SendAuthOTP([FromBody] UsersVM user)
         {
             bool isValidUserMobile = false;
@@ -496,7 +496,7 @@ namespace Accounting.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        [GoldServiceAuthorize]
+        //[GoldServiceAuthorize]
         public IActionResult VerifyAuthOTP([FromBody] UsersVM user)
         {
             if (user.NationalCode != null && user.NationalCode > 0 && user.OTP > 0)
